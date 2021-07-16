@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("Tests")]
+[assembly: InternalsVisibleTo("Tools")]
 namespace Roux
 {
     public class RouxEnvironment
