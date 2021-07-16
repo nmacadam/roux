@@ -88,7 +88,9 @@ namespace Roux
                 case ';': AddToken(TokenType.Semicolon); break;
                 case ':': AddToken(TokenType.Colon); break;
                 case '?': AddToken(TokenType.Conditional); break;
+                case '~': AddToken(TokenType.Tilde); break;
 
+                // Single or double characters
                 case '-':
                     if (Match('-')) AddToken(TokenType.MinusMinus);
                     else if (Match('=')) AddToken(TokenType.MinusEqual);
@@ -101,8 +103,10 @@ namespace Roux
                     break;
                 case '*': AddToken(Match('=') ? TokenType.StarEqual : TokenType.Star); break;
                 case '%': AddToken(Match('=') ? TokenType.PercentEqual : TokenType.Percent); break;
+                case '|': AddToken(Match('=') ? TokenType.BarEqual : TokenType.Bar); break;
+                case '&': AddToken(Match('=') ? TokenType.AmpersandEqual : TokenType.Ampersand); break;
+                case '^': AddToken(Match('=') ? TokenType.CaretEqual : TokenType.Caret); break;
 
-                // Single or double characters
                 case '!': AddToken(Match('=') ? TokenType.BangEqual : TokenType.Bang); break;
                 case '=': AddToken(Match('=') ? TokenType.EqualEqual : TokenType.Equal); break;
                 case '<': AddToken(Match('=') ? TokenType.LessEqual : TokenType.Less); break;

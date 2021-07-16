@@ -224,6 +224,48 @@ namespace RouxTests
         }
 
         [Test]
+        public void RecognizesTilde()
+        {
+            AssertInputMatchesToken("~", TokenType.Tilde);
+        }
+
+        [Test]
+        public void RecognizesAmpersand()
+        {
+            AssertInputMatchesToken("&", TokenType.Ampersand);
+        }
+
+        [Test]
+        public void RecognizesBar()
+        {
+            AssertInputMatchesToken("|", TokenType.Bar);
+        }
+
+        [Test]
+        public void RecognizesCaret()
+        {
+            AssertInputMatchesToken("^", TokenType.Caret);
+        }
+
+        [Test]
+        public void RecognizesAmpersandEqual()
+        {
+            AssertInputMatchesToken("&=", TokenType.AmpersandEqual);
+        }
+
+        [Test]
+        public void RecognizesBarEqual()
+        {
+            AssertInputMatchesToken("|=", TokenType.BarEqual);
+        }
+
+        [Test]
+        public void RecognizesCaretEqual()
+        {
+            AssertInputMatchesToken("^=", TokenType.CaretEqual);
+        }
+
+        [Test]
         public void RecognizesBangEqual()
         {
 			AssertInputMatchesToken("!=", TokenType.BangEqual);

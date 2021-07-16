@@ -6,9 +6,10 @@
         LeftParenthesis, RightParenthesis,
         LeftBrace, RightBrace,
         LeftBracket, RightBracket,
-        Comma, Dot, Minus, Plus, Semicolon, Colon, Conditional, Slash, Star, Percent,
+        Comma, Dot, Minus, Plus, Semicolon, Colon, Conditional, Slash, Star, Percent, Tilde,
 
         // One or two character tokens
+        Ampersand, AmpersandEqual, Bar, BarEqual, Caret, CaretEqual,
         Bang, BangEqual, Equal, EqualEqual, Greater, GreaterEqual, Less, LessEqual,
         PlusEqual, MinusEqual, SlashEqual, StarEqual, PercentEqual,
         PlusPlus, MinusMinus,
