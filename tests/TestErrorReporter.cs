@@ -17,6 +17,11 @@ namespace RouxTests
             Report(line, "", message);
         }
 
+        public void Error(Token token, string message)
+        {
+            Report(token.Line, "", message);
+        }
+
         private void Report(int line, string where, string message)
         {
             throw new AssertionException($"[line {line}] Error {where}: {message}");

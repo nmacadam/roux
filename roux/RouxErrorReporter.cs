@@ -21,10 +21,23 @@ namespace Roux
             Report(line, "", message);
         }
 
+        public void Error(Token token, string message)
+        {
+            if (token.TokenType == TokenType.Eof)
+            {
+                Report(token.Line, " at end", message);
+            }
+            else
+            {
+                Report(token.Line, " at '" + token.Lexeme + "'", message);
+            }
+        }
+
         private void Report(int line, string where, string message)
         {
             Console.WriteLine($"[line {line}] Error {where}: {message}");
             HadError = true;
         }
+
     }
 }

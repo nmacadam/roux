@@ -45,6 +45,12 @@ namespace Roux
             {
                 Console.WriteLine("- " + token);
             }
+
+            Parser parser = new Parser(tokens, _errorReporter);
+            Expr expression = parser.Parse();
+
+            AstPrinter printer = new AstPrinter();
+            Console.WriteLine(printer.Print(expression));
         }
     }
 }
