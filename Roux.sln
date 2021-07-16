@@ -7,7 +7,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Roux", "roux\Roux.csproj", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CLI", "cli\CLI.csproj", "{DC2C5B5E-1BC0-44C0-810D-9C91D8D8DC5E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "tests\Tests.csproj", "{282792AD-9B5B-4A05-8D6A-7F2CB299B257}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tests", "tests\Tests.csproj", "{282792AD-9B5B-4A05-8D6A-7F2CB299B257}"
+	ProjectSection(ProjectDependencies) = postProject
+		{B233F0FB-27AA-4FC4-9D29-565E6EFA100E} = {B233F0FB-27AA-4FC4-9D29-565E6EFA100E}
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tools", "tools\Tools.csproj", "{CAE9323F-3B5C-4C40-AB25-A3E5F5370A1C}"
 	ProjectSection(ProjectDependencies) = postProject
 		{B233F0FB-27AA-4FC4-9D29-565E6EFA100E} = {B233F0FB-27AA-4FC4-9D29-565E6EFA100E}
 	EndProjectSection
@@ -30,6 +35,10 @@ Global
 		{282792AD-9B5B-4A05-8D6A-7F2CB299B257}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{282792AD-9B5B-4A05-8D6A-7F2CB299B257}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{282792AD-9B5B-4A05-8D6A-7F2CB299B257}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CAE9323F-3B5C-4C40-AB25-A3E5F5370A1C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CAE9323F-3B5C-4C40-AB25-A3E5F5370A1C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CAE9323F-3B5C-4C40-AB25-A3E5F5370A1C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CAE9323F-3B5C-4C40-AB25-A3E5F5370A1C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
