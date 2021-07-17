@@ -68,6 +68,19 @@ namespace Roux
             return null;
         }
 
+        public object VisitIfStmt(Stmt.If stmt)
+        {
+            if (IsTruthy(Evaluate(stmt.Condition)))
+            {
+                Execute(stmt.ThenBranch);
+            }
+            else if (stmt.ElseBranch != null)
+            {
+                Execute(stmt.ElseBranch);
+            }
+            return null;
+        }
+
         public object VisitBlockStmt(Stmt.Block stmt)
         {
             ExecuteBlock(stmt.Statements, new Environment(_environment));
@@ -184,6 +197,22 @@ namespace Roux
         public object VisitLiteralExpr(Expr.Literal expr)
         {
             return expr.Value;
+        }
+
+        public object VisitLogicalExpr(Expr.Logical expr)
+        {
+            object left = Evaluate(expr.Left);
+
+            if (expr.Operator.TokenType == TokenType.Or) 
+            {
+                if (IsTruthy(left)) return left;
+            } 
+            else
+            {
+                if (!IsTruthy(left)) return left;
+            }
+
+            return Evaluate(expr.Right);
         }
 
         public object VisitSubscriptExpr(Expr.Subscript expr)

@@ -7,11 +7,17 @@ namespace Roux
 		public interface Visitor<T>
 		{
 			T VisitAssignExpr(Assign expr);
-			T VisitTernaryExpr(Ternary expr);
 			T VisitBinaryExpr(Binary expr);
+			// T VisitCallExpr(Call expr);
+			// T VisitGetExpr(Get expr);
 			T VisitGroupingExpr(Grouping expr);
-			T VisitSubscriptExpr(Subscript expr);
 			T VisitLiteralExpr(Literal expr);
+			T VisitLogicalExpr(Logical expr);
+			// T VisitSetExpr(Set expr);
+			T VisitSubscriptExpr(Subscript expr);
+			// T VisitSuperExpr(Super expr);
+			T VisitTernaryExpr(Ternary expr);
+			// T VisitThisExpr(This expr);
 			T VisitUnaryExpr(Unary expr);
 			T VisitVariableExpr(Variable expr);
 		}
@@ -115,6 +121,25 @@ namespace Roux
 			public override T Accept<T>(Visitor<T> visitor)
 			{
 				return visitor.VisitLiteralExpr(this);
+			}
+		}
+
+		public class Logical : Expr
+		{
+			public readonly Expr Left;
+			public readonly Token Operator;
+			public readonly Expr Right;
+
+			public Logical(Expr left, Token op, Expr right)
+			{
+				Left = left;
+				Operator = op;
+				Right = right;
+			}
+
+			public override T Accept<T>(Visitor<T> visitor)
+			{
+				return visitor.VisitLogicalExpr(this);
 			}
 		}
 

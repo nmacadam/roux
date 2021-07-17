@@ -113,10 +113,27 @@ namespace Roux
 
         private Stmt Statement()
         {
+            if (Match(TokenType.If)) return IfStatement();
             if (Match(TokenType.Print)) return PrintStatement();
             if (Match(TokenType.LeftBrace)) return new Stmt.Block(Block());
 
             return ExpressionStatement();
+        }
+
+        private Stmt IfStatement()
+        {
+            Consume(TokenType.LeftParenthesis, "Expect '(' after 'if'.");
+            Expr condition = Expression();
+            Consume(TokenType.RightParenthesis, "Expect ')' after if condition.");
+
+            Stmt thenBranch = Statement();
+            Stmt elseBranch = null;
+            if (Match(TokenType.Else))
+            {
+                elseBranch = Statement();
+            }
+
+            return new Stmt.If(condition, thenBranch, elseBranch);
         }
 
         private Stmt PrintStatement()
@@ -196,17 +213,27 @@ namespace Roux
         /// </summary>
         private Expr Ternary()
         {
-            Expr expr = Equality();
+            Expr expr = Or();
 
             if (Match(TokenType.QuestionMark))
             {
-                Expr middle = Equality();
+                Expr middle = Or();
                 Consume(TokenType.Colon, "Expected : in ternary expression");
-                Expr right = Equality();
+                Expr right = Or();
                 expr = new Expr.Ternary(expr, middle, right);
             }
 
             return expr;
+        }
+
+        private Expr Or()
+        {
+            return LogicalExpression(And, TokenType.Or);
+        }
+
+        private Expr And()
+        {
+            return LogicalExpression(Equality, TokenType.And);
         }
 
         /// <summary>
@@ -351,6 +378,27 @@ namespace Roux
                 Token op = Previous();
                 Expr right = descentStep.Invoke();
                 expr = new Expr.Binary(expr, op, right);
+            }
+
+            return expr;
+        }
+
+        /// <summary>
+        /// Initiates the parser's recursive descent at a given step for the given tokens to match
+        /// </summary>
+        /// <param name="descentStep">The step to begin at</param>
+        /// <param name="match">The token(s) to match against</param>
+        /// <returns>The resulting Expr</returns>
+        private Expr LogicalExpression(System.Func<Expr> descentStep, params TokenType[] match)
+        {
+            Expr expr = descentStep.Invoke();
+
+            // Build out the equality operation(s) as necessary
+            while (Match(match))
+            {
+                Token op = Previous();
+                Expr right = descentStep.Invoke();
+                expr = new Expr.Logical(expr, op, right);
             }
 
             return expr;

@@ -17,9 +17,16 @@ namespace Roux
 		public interface Visitor<T>
 		{
 			T VisitBlockStmt(Block stmt);
+			// T VisitBreakStmt(Break stmt);
+			// T VisitClassStmt(Class stmt);
+			// T VisitContinueStmt(Continue stmt);
 			T VisitExpressionStmt(ExpressionStmt stmt);
+			// T VisitFunctionStmt(Function stmt);
+			T VisitIfStmt(If stmt);
 			T VisitPrintStmt(Print stmt);
+			// T VisitReturnStmt(Return stmt);
 			T VisitVarStmt(Var stmt);
+			// T VisitWhileStmt(While stmt);
 		}
 
 		public abstract T Accept<T>(Visitor<T> visitor);
@@ -51,6 +58,25 @@ namespace Roux
 			public override T Accept<T>(Visitor<T> visitor)
 			{
 				return visitor.VisitExpressionStmt(this);
+			}
+		}
+
+		internal class If : Stmt
+		{
+			public readonly Expr Condition;
+			public readonly Stmt ThenBranch;
+			public readonly Stmt ElseBranch;
+
+			public If(Expr condition, Stmt thenBranch, Stmt elseBranch)
+			{
+				Condition = condition;
+				ThenBranch = thenBranch;
+				ElseBranch = elseBranch;
+			}
+
+			public override T Accept<T>(Visitor<T> visitor)
+			{
+				return visitor.VisitIfStmt(this);
 			}
 		}
 
