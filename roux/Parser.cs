@@ -46,9 +46,20 @@ namespace Roux
 
         private Expr Expression()
         {
-            return Ternary();
+            return Separator();
         }
 
+        /// <summary>
+        /// Generates an expr for the expression seperator (checks the operator ,)
+        /// </summary>
+        private Expr Separator()
+        {
+            return BinaryExpression(Ternary, TokenType.Comma);
+        }
+
+        /// <summary>
+        /// Generates an expr for ternary expressions (checks ternary operator ?:)
+        /// </summary>
         private Expr Ternary()
         {
             Expr expr = Equality();
