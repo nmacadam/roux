@@ -6,6 +6,7 @@ namespace RouxTests
     class TestErrorReporter : IErrorReporter
     {
         public bool HadError => false;
+        public bool HadRuntimeError => false;
 
         public void Error(string message)
         {
@@ -20,6 +21,16 @@ namespace RouxTests
         public void Error(Token token, string message)
         {
             Report(token.Line, "", message);
+        }
+
+        public void Reset()
+        {
+
+        }
+
+        public void RuntimeError(Token token, string message)
+        {
+            throw new AssertionException($"[line {token.Line}] RuntimeError: {message}");
         }
 
         private void Report(int line, string where, string message)

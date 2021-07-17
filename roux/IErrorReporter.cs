@@ -5,10 +5,12 @@
         void Error(string message);
         void Error(int line, string message);
         void Error(Token token, string message);
-        //void RuntimeError(RuntimeError error);
+        void RuntimeError(Token token, string message);
         //void Report(int line, string where, string message);
 
+        void Reset();
+
         bool HadError { get; }
-        //bool HadRuntimeError { get; }
+        bool HadRuntimeError { get; }
     }
 }

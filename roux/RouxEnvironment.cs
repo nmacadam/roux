@@ -8,7 +8,14 @@ namespace Roux
 {
     public class RouxEnvironment
     {
-        private readonly RouxErrorReporter _errorReporter = new RouxErrorReporter();
+        private readonly Interpreter _interpreter;
+        private readonly IErrorReporter _errorReporter;
+
+        public RouxEnvironment()
+        {
+            _errorReporter = new RouxErrorReporter();
+            _interpreter = new Interpreter(_errorReporter);
+        }
 
         public void RunPrompt()
         {
@@ -17,7 +24,7 @@ namespace Roux
                 Console.Write("> ");
                 Run(Console.ReadLine());
 
-                if (_errorReporter.HadError)
+                if (_errorReporter.HadError || _errorReporter.HadRuntimeError)
                 {
                     _errorReporter.Reset();
                 }            
@@ -30,8 +37,9 @@ namespace Roux
 
             Run(text);
 
-            if (_errorReporter.HadError)
+            if (_errorReporter.HadError || _errorReporter.HadRuntimeError)
             {
+                // todo: exit
                 _errorReporter.Reset();
             }
         }
@@ -51,6 +59,8 @@ namespace Roux
 
             AstPrinter printer = new AstPrinter();
             Console.WriteLine(printer.Print(expression));
+
+            _interpreter.Interpret(expression);
         }
     }
 }
