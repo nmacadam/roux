@@ -109,7 +109,7 @@ namespace Roux
         /// </summary>
         private Expr Factor()
         {
-            return BinaryExpression(Unary, TokenType.Slash, TokenType.Star);
+            return BinaryExpression(Unary, TokenType.Slash, TokenType.Star, TokenType.Percent);
         }
 
         /// <summary>
@@ -143,22 +143,34 @@ namespace Roux
 
             if (Match(TokenType.LeftParenthesis))
             {
-                Expr expr = Expression();
-                Consume(TokenType.RightParenthesis, "Expect ')' after expression.");
-                return new Expr.Grouping(expr);
+                return Grouping();
             }
 
             // Todo: make sure this works as expected, might need to have left and inner (right?) expressions for accessing array or whatever
             if (Match(TokenType.LeftBracket))
             {
-                Expr expr = Expression();
-                Consume(TokenType.RightBracket, "Expect ']' after expression.");
-                return new Expr.Subscript(expr);
+                return Susbcript();
             }
 
 
             var peeked = Peek();
             throw Error(Peek(), "Expect expression");
+        }
+
+        private Expr Susbcript()
+        {
+            Expr expr = Expression();
+            Consume(TokenType.RightBracket, "Expect ']' after expression.");
+            return new Expr.Subscript(expr);
+        }
+
+        private Expr Grouping()
+        {
+            // todo: handle function calls, multiple return values/tuples
+
+            Expr expr = Expression();
+            Consume(TokenType.RightParenthesis, "Expect ')' after expression.");
+            return new Expr.Grouping(expr);
         }
 
         #region Helpers
