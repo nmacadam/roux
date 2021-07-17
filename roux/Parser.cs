@@ -27,7 +27,10 @@ namespace Roux
          *  separator      → ternary ( ( "," ) ternary )* ;
          *  ternary        → equality ( ( ( "?" ) equality )* ( ":" ) equality )* ;
          *  equality       → comparison ( ( "!=" | "==" ) comparison )* ;
-         *  comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
+         *  comparison     → bitwise-or ( ( ">" | ">=" | "<" | "<=" ) bitwise-or )* ;
+         *  bitwise-or     → bitwise-xor ( ( "|" ) bitwise-xor )* ;
+         *  bitwise-xor    → bitwise-and ( ( "^" ) bitwise-and )* ;
+         *  bitwise-and    → term ( ( "&" ) term )* ;
          *  term           → factor ( ( "-" | "+" ) factor )* ;
          *  factor         → unary ( ( "/" | "*" ) unary )* ;
          *  unary          → ( "!" | "-" ) unary | primary ;
@@ -93,7 +96,31 @@ namespace Roux
         /// </summary>
         private Expr Comparison()
         {
-            return BinaryExpression(Term, TokenType.Less, TokenType.LessEqual, TokenType.Greater, TokenType.GreaterEqual);
+            return BinaryExpression(BitwiseOr, TokenType.Less, TokenType.LessEqual, TokenType.Greater, TokenType.GreaterEqual);
+        }
+
+        /// <summary>
+        /// Generates an expr for bitwise OR (checks the operator |)
+        /// </summary>
+        private Expr BitwiseOr()
+        {
+            return BinaryExpression(BitwiseXor, TokenType.Bar);
+        }
+
+        /// <summary>
+        /// Generates an expr for bitwise XOR (checks the operator ^)
+        /// </summary>
+        private Expr BitwiseXor()
+        {
+            return BinaryExpression(BitwiseAnd, TokenType.Caret);
+        }
+
+        /// <summary>
+        /// Generates an expr for bitwise AND (checks the operator &)
+        /// </summary>
+        private Expr BitwiseAnd()
+        {
+            return BinaryExpression(Term, TokenType.Ampersand);
         }
 
         /// <summary>
