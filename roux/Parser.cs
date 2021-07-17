@@ -34,9 +34,9 @@ namespace Roux
          *  separator      → assignment ( ( "," ) assignment )* ;
          *  assignment     → Identifier ( ( "=" ) ternary )* ;
          *  
-         *  ternary        → equality ( ( ( "?" ) equality )* ( ":" ) equality )* ;
-         *  equality       → comparison ( ( "!=" | "==" ) comparison )* ;
-         *  comparison     → bitwise-or ( ( ">" | ">=" | "<" | "<=" ) bitwise-or )* ;
+         *  ternary        → comparison ( ( ( "?" ) comparison )* ( ":" ) comparison )* ;
+         *  comparison     → equality ( ( ">" | ">=" | "<" | "<=" ) equality )* ;
+         *  equality       → bitwise-or ( ( "!=" | "==" ) bitwise-or )* ;
          *  bitwise-or     → bitwise-xor ( ( "|" ) bitwise-xor )* ;
          *  bitwise-xor    → bitwise-and ( ( "^" ) bitwise-and )* ;
          *  bitwise-and    → term ( ( "&" ) term )* ;
@@ -157,9 +157,9 @@ namespace Roux
         /// <summary>
         /// Entry-point for grammar
         /// </summary>
-        private Expr Expression(bool skipCommaOperator = false)
+        private Expr Expression()
         {
-            return skipCommaOperator ? Assignment() : Separator();
+            return Separator();
         }
 
         /// <summary>

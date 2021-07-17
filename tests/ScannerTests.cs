@@ -6,12 +6,12 @@ namespace RouxTests
 {
     public class ScannerTests
     {
-        private TestErrorReporter _errorReporter;
+        private TestErrorReporter _errorReporter = new TestErrorReporter();
 
         [SetUp]
         public void Setup()
         {
-            _errorReporter = new TestErrorReporter();
+            _errorReporter.Reset();
         }
 
         private void AssertTokenListValid(List<Token> tokens, int expectedSize = 1)

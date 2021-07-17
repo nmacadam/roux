@@ -44,17 +44,20 @@ namespace Roux
             }
         }
 
-        public void InterpretExpression(Expr expression)
+        public object InterpretExpression(Expr expression)
         {
             try
             {
                 object value = Evaluate(expression);
                 Console.WriteLine(Stringify(value));
+                return value;
             }
             catch (InterpreterException e)
             {
                 _errorReporter.RuntimeError(e.Token, e.Message);
             }
+
+            return null;
         }
 
         #region Statement Visiting
@@ -128,10 +131,8 @@ namespace Roux
                     return (double)left <= (double)right;
 
                 case TokenType.BangEqual:
-                    CheckNumberOperands(expr.Operator, left, right);
                     return !IsEqual(left, right);
                 case TokenType.EqualEqual:
-                    CheckNumberOperands(expr.Operator, left, right);
                     return IsEqual(left, right);
 
                 // Arithmetic
@@ -304,7 +305,7 @@ namespace Roux
 
         private string Stringify(object obj)
         {
-            if (obj == null) return "nil";
+            if (obj == null) return "null";
 
             // Hack. Work around Java adding ".0" to integer-valued doubles.
             if (obj is double)
