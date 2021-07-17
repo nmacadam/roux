@@ -9,6 +9,7 @@ namespace Roux
 			T VisitTernaryExpr(Ternary expr);
 			T VisitBinaryExpr(Binary expr);
 			T VisitGroupingExpr(Grouping expr);
+			T VisitSubscriptExpr(Subscript expr);
 			T VisitLiteralExpr(Literal expr);
 			T VisitUnaryExpr(Unary expr);
 		}
@@ -65,6 +66,21 @@ namespace Roux
 			public override T Accept<T>(Visitor<T> visitor)
 			{
 				return visitor.VisitGroupingExpr(this);
+			}
+		}
+
+		internal class Subscript : Expr
+		{
+			public readonly Expr Expression;
+
+			public Subscript(Expr expression)
+			{
+				Expression = expression;
+			}
+
+			public override T Accept<T>(Visitor<T> visitor)
+			{
+				return visitor.VisitSubscriptExpr(this);
 			}
 		}
 

@@ -148,10 +148,20 @@ namespace Roux
                 return new Expr.Grouping(expr);
             }
 
+            // Todo: make sure this works as expected, might need to have left and inner (right?) expressions for accessing array or whatever
+            if (Match(TokenType.LeftBracket))
+            {
+                Expr expr = Expression();
+                Consume(TokenType.RightBracket, "Expect ']' after expression.");
+                return new Expr.Subscript(expr);
+            }
+
 
             var peeked = Peek();
             throw Error(Peek(), "Expect expression");
         }
+
+        #region Helpers
 
         /// <summary>
         /// Initiates the parser's recursive descent at a given step for the given tokens to match
@@ -293,5 +303,7 @@ namespace Roux
         {
             return _tokens[_current - 1];
         }
+
+        #endregion
     }
 }

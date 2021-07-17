@@ -25,6 +25,11 @@ namespace Roux
             return Parenthesize("group", expr.Expression);
         }
 
+        public string VisitSubscriptExpr(Expr.Subscript expr)
+        {
+            return Parenthesize("[]", expr.Expression);
+        }
+
         public string VisitLiteralExpr(Expr.Literal expr)
         {
             if (expr.Value == null) return "null";
