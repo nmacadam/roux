@@ -17,9 +17,9 @@ namespace Roux
 		public interface Visitor<T>
 		{
 			T VisitBlockStmt(Block stmt);
-			// T VisitBreakStmt(Break stmt);
+			T VisitBreakStmt(Break stmt);
 			// T VisitClassStmt(Class stmt);
-			// T VisitContinueStmt(Continue stmt);
+			T VisitContinueStmt(Continue stmt);
 			T VisitExpressionStmt(ExpressionStmt stmt);
 			// T VisitFunctionStmt(Function stmt);
 			T VisitIfStmt(If stmt);
@@ -43,6 +43,22 @@ namespace Roux
 			public override T Accept<T>(Visitor<T> visitor)
 			{
 				return visitor.VisitBlockStmt(this);
+			}
+		}
+
+		internal class Break : Stmt
+		{
+			public override T Accept<T>(Visitor<T> visitor)
+			{
+				return visitor.VisitBreakStmt(this);
+			}
+		}
+
+		internal class Continue : Stmt
+		{
+			public override T Accept<T>(Visitor<T> visitor)
+			{
+				return visitor.VisitContinueStmt(this);
 			}
 		}
 
@@ -112,7 +128,7 @@ namespace Roux
 			}
 		}
 
-		public class While : Stmt
+		internal class While : Stmt
 		{
 			public readonly Expr Condition;
 			public readonly Stmt Body;

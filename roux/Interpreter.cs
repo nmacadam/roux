@@ -20,6 +20,9 @@ namespace Roux
 
         private readonly IErrorReporter _errorReporter;
 
+        private class BreakException : Exception { }
+        private class ContinueException : Exception { }
+
         public Interpreter(IErrorReporter errorReporter)
         {
             _errorReporter = errorReporter;
@@ -62,6 +65,22 @@ namespace Roux
 
         #region Statement Visiting
 
+        public object VisitBlockStmt(Stmt.Block stmt)
+        {
+            ExecuteBlock(stmt.Statements, new Environment(_environment));
+            return null;
+        }
+
+        public object VisitBreakStmt(Stmt.Break stmt)
+        {
+            throw new BreakException();
+        }
+
+        public object VisitContinueStmt(Stmt.Continue stmt)
+        {
+            throw new ContinueException();
+        }
+
         public object VisitExpressionStmt(Stmt.ExpressionStmt stmt)
         {
             Evaluate(stmt.Expression);
@@ -78,12 +97,6 @@ namespace Roux
             {
                 Execute(stmt.ElseBranch);
             }
-            return null;
-        }
-
-        public object VisitBlockStmt(Stmt.Block stmt)
-        {
-            ExecuteBlock(stmt.Statements, new Environment(_environment));
             return null;
         }
 
@@ -111,7 +124,20 @@ namespace Roux
         {
             while (IsTruthy(Evaluate(stmt.Condition)))
             {
-                Execute(stmt.Body);
+                try
+                {
+                    Execute(stmt.Body);
+                }
+                catch (BreakException)
+                {
+                    // Break out of the loop;
+                    break;
+                }
+                catch (ContinueException)
+                {
+                    // Continue the next iteration
+                    continue;
+                }
             }
             return null;
         }

@@ -113,6 +113,8 @@ namespace Roux
 
         private Stmt Statement()
         {
+            if (Match(TokenType.Break)) return BreakStatement();
+            if (Match(TokenType.Continue)) return ContinueStatement();
             if (Match(TokenType.For)) return ForStatement();
             if (Match(TokenType.If)) return IfStatement();
             if (Match(TokenType.Print)) return PrintStatement();
@@ -120,6 +122,28 @@ namespace Roux
             if (Match(TokenType.LeftBrace)) return new Stmt.Block(Block());
 
             return ExpressionStatement();
+        }
+
+        private Stmt BreakStatement()
+        {
+            if (_loopDepth == 0)
+            {
+                Error(Previous(), "Cannot use 'break' outside of a loop.");
+            }
+
+            Consume(TokenType.Semicolon, "Expect ';' after 'break'.");
+            return new Stmt.Break();
+        }
+
+        private Stmt ContinueStatement()
+        {
+            if (_loopDepth == 0)
+            {
+                Error(Previous(), "Cannot use 'continue' outside of a loop.");
+            }
+
+            Consume(TokenType.Semicolon, "Expect ';' after 'continue'.");
+            return new Stmt.Continue();
         }
 
         private Stmt ForStatement()
@@ -208,12 +232,22 @@ namespace Roux
 
         private Stmt WhileStatement()
         {
-            Consume(TokenType.LeftParenthesis, "Expect '(' after 'while'.");
-            Expr condition = Expression();
-            Consume(TokenType.RightParenthesis, "Expect ')' after if condition.");
-            Stmt body = Statement();
+            _loopDepth++;
 
-            return new Stmt.While(condition, body);
+            try
+            {
+                Consume(TokenType.LeftParenthesis, "Expect '(' after 'while'.");
+                Expr condition = Expression();
+                Consume(TokenType.RightParenthesis, "Expect ')' after if condition.");
+                Stmt body = Statement();
+
+                return new Stmt.While(condition, body);
+            }
+            finally
+            {
+                _loopDepth--;
+            }
+            
         }
 
         private List<Stmt> Block()
