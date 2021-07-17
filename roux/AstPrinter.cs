@@ -55,5 +55,16 @@ namespace Roux
 
             return builder.ToString();
         }
+
+        public string VisitAssignExpr(Expr.Assign expr)
+        {
+            // todo: dont think i can revisit the same thing here?
+            return Parenthesize("=", expr, expr.Value);
+        }
+
+        public string VisitVariableExpr(Expr.Variable expr)
+        {
+            return Parenthesize("var", expr);
+        }
     }
 }

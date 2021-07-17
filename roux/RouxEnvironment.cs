@@ -55,12 +55,13 @@ namespace Roux
             }
 
             Parser parser = new Parser(tokens, _errorReporter);
-            Expr expression = parser.Parse();
+            List<Stmt> statements = parser.Parse();
+            //Expr expression = parser.Parse();
 
-            AstPrinter printer = new AstPrinter();
-            Console.WriteLine(printer.Print(expression));
+            //AstPrinter printer = new AstPrinter();
+            //Console.WriteLine(printer.Print(expression));
 
-            _interpreter.Interpret(expression);
+            _interpreter.Interpret(statements);
         }
     }
 }

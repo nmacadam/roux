@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Roux
 {
@@ -13,8 +14,10 @@ namespace Roux
         }
     }
 
-    internal class Interpreter : Expr.Visitor<object>
+    internal class Interpreter : Expr.Visitor<object>, Stmt.Visitor<object>
     {
+        private Environment _environment = new Environment();
+
         private readonly IErrorReporter _errorReporter;
 
         public Interpreter(IErrorReporter errorReporter)
@@ -22,7 +25,26 @@ namespace Roux
             _errorReporter = errorReporter;
         }
 
-        public void Interpret(Expr expression)
+        public void Interpret(List<Stmt> statements)
+        {
+            try
+            {
+                foreach (Stmt statement in statements)
+                {
+                    Execute(statement);
+                }
+            }
+            catch (InterpreterException e)
+            {
+                _errorReporter.RuntimeError(e.Token, e.Message);
+            }
+            catch (EnvironmentException e)
+            {
+                _errorReporter.RuntimeError(e.Token, e.Message);
+            }
+        }
+
+        public void InterpretExpression(Expr expression)
         {
             try
             {
@@ -35,6 +57,51 @@ namespace Roux
             }
         }
 
+        #region Statement Visiting
+
+        public object VisitExpressionStmt(Stmt.ExpressionStmt stmt)
+        {
+            Evaluate(stmt.Expression);
+            return null;
+        }
+
+        public object VisitBlockStmt(Stmt.Block stmt)
+        {
+            ExecuteBlock(stmt.Statements, new Environment(_environment));
+            return null;
+        }
+
+        public object VisitPrintStmt(Stmt.Print stmt)
+        {
+            object value = Evaluate(stmt.Expression);
+            Console.WriteLine(Stringify(value));
+            return null;
+        }
+
+        public object VisitVarStmt(Stmt.Var stmt)
+        {
+            // Note: roux does not require an initalizer, default initialization to null
+            object value = null;
+            if (stmt.Initializer != null)
+            {
+                value = Evaluate(stmt.Initializer);
+            }
+
+            _environment.Define(stmt.Name.Lexeme, value);
+            return null;
+        }
+
+        #endregion
+
+        #region Expression Visiting
+
+        public object VisitAssignExpr(Expr.Assign expr)
+        {
+            object value = Evaluate(expr.Value);
+            _environment.Assign(expr.Name, value);
+            return value;
+        }
+
         public object VisitBinaryExpr(Expr.Binary expr)
         {
             object left = Evaluate(expr.Left);
@@ -42,6 +109,10 @@ namespace Roux
 
             switch (expr.Operator.TokenType)
             {
+                // Comma
+                case TokenType.Comma:
+                    return right;
+
                 // Comparison
                 case TokenType.Greater:
                     CheckNumberOperands(expr.Operator, left, right);
@@ -121,7 +192,11 @@ namespace Roux
 
         public object VisitTernaryExpr(Expr.Ternary expr)
         {
-            throw new System.NotImplementedException();
+            object left = Evaluate(expr.Left);
+            object middle = Evaluate(expr.Middle);
+            object right = Evaluate(expr.Right);
+
+            return IsTruthy(left) ? middle : right;
         }
 
         public object VisitUnaryExpr(Expr.Unary expr)
@@ -140,7 +215,42 @@ namespace Roux
             throw new InterpreterException(null, null);
         }
 
+        public object VisitVariableExpr(Expr.Variable expr)
+        {
+            return _environment.Get(expr.Name);
+        }
+
+        #endregion
+
         #region Helpers
+
+        /// <summary>
+        /// Send the statement back through the interpreter's visitor implementation
+        /// </summary>
+        private object Execute(Stmt stmt)
+        {
+            return stmt.Accept(this);
+        }
+
+        /// <summary>
+        /// Send a list of statements back through the interpreter's visitor implementation
+        /// </summary>
+        public void ExecuteBlock(List<Stmt> statements, Environment environment)
+        {
+            Environment previous = _environment;
+            try
+            {
+                _environment = environment;
+                foreach (Stmt statement in statements)
+                {
+                    Execute(statement);
+                }
+            }
+            finally
+            {
+                _environment = previous;
+            }
+        }
 
         /// <summary>
         /// Send the expression back through the interpreter's visitor implementation

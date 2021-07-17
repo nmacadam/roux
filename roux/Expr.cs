@@ -6,15 +6,34 @@ namespace Roux
 	{
 		public interface Visitor<T>
 		{
+			T VisitAssignExpr(Assign expr);
 			T VisitTernaryExpr(Ternary expr);
 			T VisitBinaryExpr(Binary expr);
 			T VisitGroupingExpr(Grouping expr);
 			T VisitSubscriptExpr(Subscript expr);
 			T VisitLiteralExpr(Literal expr);
 			T VisitUnaryExpr(Unary expr);
+			T VisitVariableExpr(Variable expr);
 		}
 
 		public abstract T Accept<T>(Visitor<T> visitor);
+
+		public class Assign : Expr
+		{
+			public readonly Token Name;
+			public readonly Expr Value;
+
+			public Assign(Token name, Expr value)
+			{
+				Name = name;
+				Value = value;
+			}
+
+			public override T Accept<T>(Visitor<T> visitor)
+			{
+				return visitor.VisitAssignExpr(this);
+			}
+		}
 
 		internal class Ternary : Expr
 		{
@@ -114,6 +133,22 @@ namespace Roux
 			{
 				return visitor.VisitUnaryExpr(this);
 			}
+		}
+
+		internal class Variable : Expr
+		{
+			public readonly Token Name;
+
+			public Variable(Token name)
+			{
+				Name = name;
+			}
+
+			public override T Accept<T>(Visitor<T> visitor)
+			{
+				return visitor.VisitVariableExpr(this);
+			}
+
 		}
 	}
 }

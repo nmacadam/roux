@@ -2,6 +2,8 @@
 
 namespace Roux
 {
+    // todo: handle implicit semicolons better (will break once braces are introduced)
+
     /// <summary>
     /// Tokenizes Roux source code
     /// </summary>
@@ -62,6 +64,12 @@ namespace Roux
             {
                 _start = _current;
                 ScanToken();
+            }
+
+            // Add a semicolon at the end so the REPL works with implicit semicolons
+            if (_line == 1 && _tokens.Count > 0 && _tokens[_tokens.Count - 1].TokenType != TokenType.Semicolon)
+            {
+                //_tokens.Add(new Token(TokenType.Semicolon, "", null, _line));
             }
 
             _tokens.Add(new Token(TokenType.Eof, "", null, _line));
@@ -158,7 +166,7 @@ namespace Roux
                 case '\n':
                     if (_tokens.Count > 0 && _tokens[_tokens.Count - 1].TokenType != TokenType.Semicolon)
                     {
-                        AddToken(TokenType.Semicolon);
+                        //AddToken(TokenType.Semicolon);
                     }
                     _line++;
                     break;

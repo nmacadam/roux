@@ -22,9 +22,18 @@ namespace Roux
             _errorReporter = errorReporter;
         }
 
-        /* Recursive Descent Grammar:
+        /* Statement Grammar:
+         *  program        → declaratation* EOF ;
+         *  declaratation  → varDecl | statement ;
+         *  varDecl        → "var" Identifier ( "=" expression )? ";" ;
+         *  statement      → exprStatement | printStmt ;
+         */
+
+        /* Expression Grammar:
          *  expression     → separator ;
-         *  separator      → ternary ( ( "," ) ternary )* ;
+         *  separator      → assignment ( ( "," ) assignment )* ;
+         *  assignment     → Identifier ( ( "=" ) ternary )* ;
+         *  
          *  ternary        → equality ( ( ( "?" ) equality )* ( ":" ) equality )* ;
          *  equality       → comparison ( ( "!=" | "==" ) comparison )* ;
          *  comparison     → bitwise-or ( ( ">" | ">=" | "<" | "<=" ) bitwise-or )* ;
@@ -34,10 +43,29 @@ namespace Roux
          *  term           → factor ( ( "-" | "+" ) factor )* ;
          *  factor         → unary ( ( "/" | "*" ) unary )* ;
          *  unary          → ( "!" | "-" ) unary | primary ;
-         *  primary        → Number | String | "true" | "false" | "null" | "(" expression ")" ;
+         *  primary        → Number | String | "true" | "false" | "null" | "(" expression ")" | Identifier;
          */
 
-        public Expr Parse()
+        public List<Stmt> Parse()
+        {
+            List<Stmt> statements = new List<Stmt>();
+
+            try
+            {
+                while (!IsAtEnd())
+                {
+                    statements.Add(Declaration());
+                }
+            }
+            catch (ParseException e)
+            {
+                return null;
+            }
+
+            return statements;
+        }
+
+        public Expr ParseExpression()
         {
             try
             {
@@ -49,12 +77,89 @@ namespace Roux
             }
         }
 
+        #region Statements
+
+        private Stmt Declaration()
+        {
+            try
+            {
+                //if (Match(TokenType.Class)) return ClassDeclaration();
+                //if (Match(TokenType.Fun)) return Function("function");
+                if (Match(TokenType.Var)) return VarDeclaration();
+
+                return Statement();
+            }
+            catch (ParseException e)
+            {
+                Synchronize();
+                return null;
+            }
+        }
+
+        private Stmt VarDeclaration()
+        {
+            Token name = Consume(TokenType.Identifier, "Expect variable name.");
+
+            Expr initializer = null;
+
+            if (Match(TokenType.Equal))
+            {
+                initializer = Expression();
+            }
+
+            Consume(TokenType.Semicolon, "Expect ';' after variable declaration.");
+            return new Stmt.Var(name, initializer);
+        }
+
+        private Stmt Statement()
+        {
+            if (Match(TokenType.Print)) return PrintStatement();
+            if (Match(TokenType.LeftBrace)) return new Stmt.Block(Block());
+
+            return ExpressionStatement();
+        }
+
+        private Stmt PrintStatement()
+        {
+            Expr value = Expression();
+
+            // todo: going to cause issue
+            Consume(TokenType.Semicolon, "Expect ; or newline after value");
+            return new Stmt.Print(value);
+        }
+
+        private List<Stmt> Block()
+        {
+            List<Stmt> statements = new List<Stmt>();
+
+            while (!Check(TokenType.RightBrace) && !IsAtEnd())
+            {
+                statements.Add(Declaration());
+            }
+
+            Consume(TokenType.RightBrace, "Expect } after block");
+            return statements;
+        }
+
+        private Stmt ExpressionStatement()
+        {
+            Expr expr = Expression();
+
+            // todo: going to cause issue
+            Consume(TokenType.Semicolon, "Expect ; or newline after expression");
+            return new Stmt.ExpressionStmt(expr);
+        }
+
+        #endregion
+
+        #region Expressions
+
         /// <summary>
         /// Entry-point for grammar
         /// </summary>
-        private Expr Expression()
+        private Expr Expression(bool skipCommaOperator = false)
         {
-            return Separator();
+            return skipCommaOperator ? Assignment() : Separator();
         }
 
         /// <summary>
@@ -62,7 +167,28 @@ namespace Roux
         /// </summary>
         private Expr Separator()
         {
-            return BinaryExpression(Ternary, TokenType.Comma);
+            return BinaryExpression(Assignment, TokenType.Comma);
+        }
+
+        private Expr Assignment()
+        {
+            Expr expr = Ternary();
+
+            if (Match(TokenType.Equal))
+            {
+                Token equals = Previous();
+                Expr value = Assignment();
+
+                if (expr is Expr.Variable)
+                {
+                    Token name = ((Expr.Variable)expr).Name;
+                    return new Expr.Assign(name, value);
+                }
+
+                Error(equals, "Invalid assignment target");
+            }
+
+            return expr;
         }
 
         /// <summary>
@@ -168,6 +294,11 @@ namespace Roux
                 return new Expr.Literal(Previous().Literal);
             }
 
+            if (Match(TokenType.Identifier))
+            {
+                return new Expr.Variable(Previous());
+            }
+
             if (Match(TokenType.LeftParenthesis))
             {
                 return Grouping();
@@ -199,6 +330,8 @@ namespace Roux
             Consume(TokenType.RightParenthesis, "Expect ')' after expression.");
             return new Expr.Grouping(expr);
         }
+
+        #endregion
 
         #region Helpers
 
@@ -333,6 +466,24 @@ namespace Roux
         {
             return _tokens[_current];
         }
+
+        //private bool LookAhead(TokenType lookFor, TokenType stopOn, out Token foundToken)
+        //{
+        //    foundToken = default;
+        //    int itr = _current;
+        //    while (itr < _tokens.Count && _tokens[itr].TokenType != stopOn)
+        //    {
+        //        if (_tokens[itr].TokenType == lookFor)
+        //        {
+        //            foundToken = _tokens[itr];
+        //            return true;
+        //        }
+
+        //        itr++;
+        //    }
+
+        //    return false;
+        //}
 
         /// <summary>
         /// Returns the previous token
