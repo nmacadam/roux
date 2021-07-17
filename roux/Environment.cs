@@ -52,6 +52,11 @@ namespace Roux
                 _values[name.Lexeme] = value;
                 return;
             }
+            if (Enclosing != null)
+            {
+                Enclosing.Assign(name, value);
+                return;
+            }
 
             throw new EnvironmentException(name, $"Undefined variable '{name.Lexeme}'.");
         }

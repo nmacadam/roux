@@ -113,11 +113,72 @@ namespace Roux
 
         private Stmt Statement()
         {
+            if (Match(TokenType.For)) return ForStatement();
             if (Match(TokenType.If)) return IfStatement();
             if (Match(TokenType.Print)) return PrintStatement();
+            if (Match(TokenType.While)) return WhileStatement();
             if (Match(TokenType.LeftBrace)) return new Stmt.Block(Block());
 
             return ExpressionStatement();
+        }
+
+        private Stmt ForStatement()
+        {
+            _loopDepth++;
+
+            try
+            {
+                Consume(TokenType.LeftParenthesis, "Expect '(' after 'for'.");
+
+                Stmt initializer;
+                if (Match(TokenType.Semicolon))
+                {
+                    initializer = null;
+                }
+                else if (Match(TokenType.Var))
+                {
+                    initializer = VarDeclaration();
+                }
+                else
+                {
+                    initializer = ExpressionStatement();
+                }
+
+                Expr condition = null;
+                if (!Check(TokenType.Semicolon))
+                {
+                    condition = Expression();
+                }
+                Consume(TokenType.Semicolon, "Expect ';' after loop condition.");
+
+                Expr increment = null;
+                if (!Check(TokenType.RightParenthesis))
+                {
+                    increment = Expression();
+                }
+                Consume(TokenType.RightParenthesis, "Expect ')' after for clauses.");
+
+                Stmt body = Statement();
+
+                if (increment != null)
+                {
+                    body = new Stmt.Block(new List<Stmt>() { body, new Stmt.ExpressionStmt(increment) });
+                }
+
+                if (condition == null) condition = new Expr.Literal(true);
+                body = new Stmt.While(condition, body);
+
+                if (initializer != null)
+                {
+                    body = new Stmt.Block(new List<Stmt>() { initializer, body });
+                }
+
+                return body;
+            }
+            finally
+            {
+                _loopDepth--;
+            }
         }
 
         private Stmt IfStatement()
@@ -143,6 +204,16 @@ namespace Roux
             // todo: going to cause issue
             Consume(TokenType.Semicolon, "Expect ; or newline after value");
             return new Stmt.Print(value);
+        }
+
+        private Stmt WhileStatement()
+        {
+            Consume(TokenType.LeftParenthesis, "Expect '(' after 'while'.");
+            Expr condition = Expression();
+            Consume(TokenType.RightParenthesis, "Expect ')' after if condition.");
+            Stmt body = Statement();
+
+            return new Stmt.While(condition, body);
         }
 
         private List<Stmt> Block()

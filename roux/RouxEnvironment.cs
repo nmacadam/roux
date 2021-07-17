@@ -49,10 +49,10 @@ namespace Roux
             Scanner scanner = new Scanner(source, _errorReporter);
             List<Token> tokens = scanner.ScanTokens();
 
-            foreach (var token in tokens)
-            {
-                Console.WriteLine("- " + token);
-            }
+            //foreach (var token in tokens)
+            //{
+            //    Console.WriteLine("- " + token);
+            //}
 
             Parser parser = new Parser(tokens, _errorReporter);
             List<Stmt> statements = parser.Parse();

@@ -26,7 +26,7 @@ namespace Roux
 			T VisitPrintStmt(Print stmt);
 			// T VisitReturnStmt(Return stmt);
 			T VisitVarStmt(Var stmt);
-			// T VisitWhileStmt(While stmt);
+			T VisitWhileStmt(While stmt);
 		}
 
 		public abstract T Accept<T>(Visitor<T> visitor);
@@ -109,6 +109,23 @@ namespace Roux
 			public override T Accept<T>(Visitor<T> visitor)
 			{
 				return visitor.VisitVarStmt(this);
+			}
+		}
+
+		public class While : Stmt
+		{
+			public readonly Expr Condition;
+			public readonly Stmt Body;
+
+			public While(Expr condition, Stmt body)
+			{
+				Condition = condition;
+				Body = body;
+			}
+
+			public override T Accept<T>(Visitor<T> visitor)
+			{
+				return visitor.VisitWhileStmt(this);
 			}
 		}
 	}

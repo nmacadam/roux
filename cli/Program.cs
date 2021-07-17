@@ -8,7 +8,14 @@ namespace RouxCLI
 
         static void Main(string[] args)
         {
-            _roux.RunPrompt();
+            if (args.Length > 0)
+            {
+                _roux.RunFile(args[0]);
+            }
+            else
+            {
+                _roux.RunPrompt();
+            }
         }
     }
 }
