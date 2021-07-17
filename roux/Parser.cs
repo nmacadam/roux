@@ -23,7 +23,9 @@ namespace Roux
         }
 
         /* Recursive Descent Grammar:
-         *  expression     → equality ;
+         *  expression     → separator ;
+         *  separator      → ternary ( ( "," ) ternary )* ;
+         *  ternary        → equality ( ( ( "?" ) equality )* ( ":" ) equality )* ;
          *  equality       → comparison ( ( "!=" | "==" ) comparison )* ;
          *  comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
          *  term           → factor ( ( "-" | "+" ) factor )* ;
@@ -44,6 +46,9 @@ namespace Roux
             }
         }
 
+        /// <summary>
+        /// Entry-point for grammar
+        /// </summary>
         private Expr Expression()
         {
             return Separator();
