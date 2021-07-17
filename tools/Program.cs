@@ -25,10 +25,11 @@ namespace RouxTools
             }
 
             ASTGenerator.DefineAST(outputDirectory, "Expr", new List<string>(){
-              "Binary   : Expr left, Token operator, Expr right",
-              "Grouping : Expr expression",
-              "Literal  : object value",
-              "Unary    : Token operator, Expr right"
+                "Ternary  : Expr left, Expr middle, Expr right",
+                "Binary   : Expr left, Token operator, Expr right",
+                "Grouping : Expr expression",
+                "Literal  : object value",
+                "Unary    : Token operator, Expr right"
             });
         }
     }

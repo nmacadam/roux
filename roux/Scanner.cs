@@ -87,7 +87,7 @@ namespace Roux
                 case '.': AddToken(TokenType.Dot); break;
                 case ';': AddToken(TokenType.Semicolon); break;
                 case ':': AddToken(TokenType.Colon); break;
-                case '?': AddToken(TokenType.Conditional); break;
+                case '?': AddToken(TokenType.QuestionMark); break;
                 case '~': AddToken(TokenType.Tilde); break;
 
                 // Single or double characters

@@ -22,7 +22,7 @@ namespace Roux
             _errorReporter = errorReporter;
         }
 
-        /* Grammar:
+        /* Recursive Descent Grammar:
          *  expression     → equality ;
          *  equality       → comparison ( ( "!=" | "==" ) comparison )* ;
          *  comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
@@ -46,7 +46,22 @@ namespace Roux
 
         private Expr Expression()
         {
-            return Equality();
+            return Ternary();
+        }
+
+        private Expr Ternary()
+        {
+            Expr expr = Equality();
+
+            if (Match(TokenType.QuestionMark))
+            {
+                Expr middle = Equality();
+                Consume(TokenType.Colon, "Expected : in ternary expression");
+                Expr right = Equality();
+                expr = new Expr.Ternary(expr, middle, right);
+            }
+
+            return expr;
         }
 
         /// <summary>
@@ -54,7 +69,7 @@ namespace Roux
         /// </summary>
         private Expr Equality()
         {
-            return RecursiveDescent(Comparison, TokenType.BangEqual, TokenType.EqualEqual);
+            return BinaryExpression(Comparison, TokenType.BangEqual, TokenType.EqualEqual);
         }
 
         /// <summary>
@@ -62,7 +77,7 @@ namespace Roux
         /// </summary>
         private Expr Comparison()
         {
-            return RecursiveDescent(Term, TokenType.Less, TokenType.LessEqual, TokenType.Greater, TokenType.GreaterEqual);
+            return BinaryExpression(Term, TokenType.Less, TokenType.LessEqual, TokenType.Greater, TokenType.GreaterEqual);
         }
 
         /// <summary>
@@ -70,7 +85,7 @@ namespace Roux
         /// </summary>
         private Expr Term()
         {
-            return RecursiveDescent(Factor, TokenType.Minus, TokenType.Plus);
+            return BinaryExpression(Factor, TokenType.Minus, TokenType.Plus);
         }
 
         /// <summary>
@@ -78,11 +93,11 @@ namespace Roux
         /// </summary>
         private Expr Factor()
         {
-            return RecursiveDescent(Unary, TokenType.Slash, TokenType.Star);
+            return BinaryExpression(Unary, TokenType.Slash, TokenType.Star);
         }
 
         /// <summary>
-        /// Generates an expr for comparison (checks operators ! and -)
+        /// Generates an expr for unary operators (checks operators ! and -)
         /// </summary>
         private Expr Unary()
         {
@@ -128,7 +143,7 @@ namespace Roux
         /// <param name="descentStep">The step to begin at</param>
         /// <param name="match">The token(s) to match against</param>
         /// <returns>The resulting Expr</returns>
-        private Expr RecursiveDescent(System.Func<Expr> descentStep, params TokenType[] match)
+        private Expr BinaryExpression(System.Func<Expr> descentStep, params TokenType[] match)
         {
             Expr expr = descentStep.Invoke();
 

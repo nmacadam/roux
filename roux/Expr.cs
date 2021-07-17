@@ -6,6 +6,7 @@ namespace Roux
 	{
 		public interface Visitor<T>
 		{
+			T VisitTernaryExpr(Ternary expr);
 			T VisitBinaryExpr(Binary expr);
 			T VisitGroupingExpr(Grouping expr);
 			T VisitLiteralExpr(Literal expr);
@@ -13,6 +14,25 @@ namespace Roux
 		}
 
 		public abstract T Accept<T>(Visitor<T> visitor);
+
+		internal class Ternary : Expr
+		{
+			public readonly Expr Left;
+			public readonly Expr Middle;
+			public readonly Expr Right;
+
+			public Ternary(Expr left, Expr middle, Expr right)
+			{
+				Left = left;
+				Middle = middle;
+				Right = right;
+			}
+
+			public override T Accept<T>(Visitor<T> visitor)
+			{
+				return visitor.VisitTernaryExpr(this);
+			}
+		}
 
 		internal class Binary : Expr
 		{

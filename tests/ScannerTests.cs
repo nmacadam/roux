@@ -194,9 +194,9 @@ namespace RouxTests
         }
 
         [Test]
-        public void RecognizesConditional()
+        public void RecognizesQuestionMark()
         {
-			AssertInputMatchesToken("?", TokenType.Conditional);
+			AssertInputMatchesToken("?", TokenType.QuestionMark);
         }
 
         [Test]

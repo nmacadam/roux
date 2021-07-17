@@ -10,6 +10,11 @@ namespace Roux
             return expr.Accept(this);
         }
 
+        public string VisitTernaryExpr(Expr.Ternary expr)
+        {
+            return Parenthesize("?:", expr.Left, expr.Middle, expr.Right);
+        }
+
         public string VisitBinaryExpr(Expr.Binary expr)
         {
             return Parenthesize(expr.Operator.Lexeme, expr.Left, expr.Right);
