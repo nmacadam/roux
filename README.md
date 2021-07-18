@@ -19,6 +19,14 @@ fizzbuzz(1,15);
 ```
 
 ## changes to the lox language
-- more operators (+=, -=, *=, /=, ++, --, ?:. comma, and more...)
+- null instead of nil
+- lambdas
+- more operators (+=, -=, *=, /=, ++, --, ?:, comma)
+
+**Planned Changes:**
 - implicit semicolons
-- WIP
+- implicit this
+- multiple return values
+- comma separated delclarations
+- import system
+- data structures
