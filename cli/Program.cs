@@ -14,7 +14,8 @@ namespace RouxCLI
             }
             else
             {
-                _roux.RunPrompt();
+                //_roux.RunPrompt();
+                _roux.RunFile(@"D:\Development\roux\examples\anonymous_functions.rx");
             }
         }
     }

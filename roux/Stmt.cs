@@ -21,10 +21,10 @@ namespace Roux
 			// T VisitClassStmt(Class stmt);
 			T VisitContinueStmt(Continue stmt);
 			T VisitExpressionStmt(ExpressionStmt stmt);
-			// T VisitFunctionStmt(Function stmt);
+			T VisitFunctionStmt(Function stmt);
 			T VisitIfStmt(If stmt);
 			T VisitPrintStmt(Print stmt);
-			// T VisitReturnStmt(Return stmt);
+			T VisitReturnStmt(Return stmt);
 			T VisitVarStmt(Var stmt);
 			T VisitWhileStmt(While stmt);
 		}
@@ -77,6 +77,25 @@ namespace Roux
 			}
 		}
 
+		internal class Function : Stmt
+		{
+			public readonly Token Name;
+			public readonly List<Token> Parameters;
+			public readonly List<Stmt> Body;
+
+			public Function(Token name, List<Token> parameters, List<Stmt> body)
+			{
+				Name = name;
+				Parameters = parameters;
+				Body = body;
+			}
+
+			public override T Accept<T>(Visitor<T> visitor)
+			{
+				return visitor.VisitFunctionStmt(this);
+			}
+		}
+
 		internal class If : Stmt
 		{
 			public readonly Expr Condition;
@@ -108,6 +127,23 @@ namespace Roux
 			public override T Accept<T>(Visitor<T> visitor)
 			{
 				return visitor.VisitPrintStmt(this);
+			}
+		}
+
+		internal class Return : Stmt
+		{
+			public readonly Token Keyword;
+			public readonly Expr Value;
+
+			public Return(Token keyword, Expr value)
+			{
+				Keyword = keyword;
+				Value = value;
+			}
+
+			public override T Accept<T>(Visitor<T> visitor)
+			{
+				return visitor.VisitReturnStmt(this);
 			}
 		}
 

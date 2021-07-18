@@ -32,6 +32,7 @@ namespace Roux
             {"else",        TokenType.Else        },
             {"false",       TokenType.False       },
             {"for",         TokenType.For         },
+            {"fun",         TokenType.Fun         },
             {"if",          TokenType.If          },
             {"null",        TokenType.Null        },
             {"operator",    TokenType.Operator    },
@@ -125,7 +126,7 @@ namespace Roux
                         // A comment goes until the end of the line.                
                         while (Peek() != '\n' && !IsAtEnd()) Advance();
 
-                        Advance();
+                        //Advance();
                     }
                     else if (Match('*'))
                     {

@@ -76,5 +76,15 @@ namespace Roux
         {
             throw new NotImplementedException();
         }
+
+        public string VisitCallExpr(Expr.Call expr)
+        {
+            throw new NotImplementedException();
+        }
+
+        public string VisitLambdaExpr(Expr.Lambda expr)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

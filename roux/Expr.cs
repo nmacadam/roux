@@ -8,9 +8,10 @@ namespace Roux
 		{
 			T VisitAssignExpr(Assign expr);
 			T VisitBinaryExpr(Binary expr);
-			// T VisitCallExpr(Call expr);
+			T VisitCallExpr(Call expr);
 			// T VisitGetExpr(Get expr);
 			T VisitGroupingExpr(Grouping expr);
+			T VisitLambdaExpr(Lambda expr);
 			T VisitLiteralExpr(Literal expr);
 			T VisitLogicalExpr(Logical expr);
 			// T VisitSetExpr(Set expr);
@@ -25,7 +26,7 @@ namespace Roux
 
 		public abstract T Accept<T>(Visitor<T> visitor);
 
-		public class Assign : Expr
+		internal class Assign : Expr
 		{
 			public readonly Token Name;
 			public readonly Expr Value;
@@ -39,6 +40,25 @@ namespace Roux
 			public override T Accept<T>(Visitor<T> visitor)
 			{
 				return visitor.VisitAssignExpr(this);
+			}
+		}
+
+		internal class Call : Expr
+		{
+			public readonly Expr Callee;
+			public readonly Token Parenthesis;
+			public readonly List<Expr> Arguments;
+
+			public Call(Expr callee, Token parenthesis, List<Expr> arguments)
+			{
+				Callee = callee;
+				Parenthesis = parenthesis;
+				Arguments = arguments;
+			}
+
+			public override T Accept<T>(Visitor<T> visitor)
+			{
+				return visitor.VisitCallExpr(this);
 			}
 		}
 
@@ -126,6 +146,23 @@ namespace Roux
 			public override T Accept<T>(Visitor<T> visitor)
 			{
 				return visitor.VisitSuffixExpr(this);
+			}
+		}
+
+		internal class Lambda : Expr
+		{
+			public readonly List<Token> Parameters;
+			public readonly List<Stmt> Body;
+
+			public Lambda(List<Token> parameters, List<Stmt> body)
+			{
+				Parameters = parameters;
+				Body = body;
+			}
+
+			public override T Accept<T>(Visitor<T> visitor)
+			{
+				return visitor.VisitLambdaExpr(this);
 			}
 		}
 

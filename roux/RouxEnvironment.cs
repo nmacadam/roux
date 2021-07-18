@@ -40,7 +40,8 @@ namespace Roux
             if (_errorReporter.HadError || _errorReporter.HadRuntimeError)
             {
                 // todo: exit
-                _errorReporter.Reset();
+                //_errorReporter.Reset();
+                return;
             }
         }
 

@@ -84,8 +84,14 @@ namespace Roux
             try
             {
                 //if (Match(TokenType.Class)) return ClassDeclaration();
-                //if (Match(TokenType.Fun)) return Function("function");
-                if (Match(TokenType.Var)) return VarDeclaration();
+                if (Match(TokenType.Fun))
+                {
+                    return Function("function");
+                }
+                if (Match(TokenType.Var))
+                {
+                    return VarDeclaration();
+                }
 
                 return Statement();
             }
@@ -95,6 +101,51 @@ namespace Roux
                 return null;
             }
         }
+
+        private Stmt.Function Function(string kind)
+        {
+            Token name = Consume(TokenType.Identifier, $"Expect {kind} name.");
+            Consume(TokenType.LeftParenthesis, $"Expect '(' after {kind} name.");
+            List<Token> parameters = new List<Token>();
+            if (!Check(TokenType.RightParenthesis))
+            {
+                do
+                {
+                    if (parameters.Count >= 255)
+                    {
+                        Error(Peek(), "Cannot have more than 255 parameters.");
+                    }
+
+                    parameters.Add(Consume(TokenType.Identifier, "Expect parameter name."));
+                } while (Match(TokenType.Comma));
+            }
+            Consume(TokenType.RightParenthesis, "Expect ')' after parameters.");
+            Consume(TokenType.LeftBrace, "Expect '{' before " + kind + " body.");
+            List<Stmt> body = Block();
+            return new Stmt.Function(name, parameters, body);
+        }
+
+        //private Stmt.Function AnonymousFunction()
+        //{
+        //    Consume(TokenType.LeftParenthesis, $"Expect '(' after 'fun'");
+        //    List<Token> parameters = new List<Token>();
+        //    if (!Check(TokenType.RightParenthesis))
+        //    {
+        //        do
+        //        {
+        //            if (parameters.Count >= 255)
+        //            {
+        //                Error(Peek(), "Cannot have more than 255 parameters.");
+        //            }
+
+        //            parameters.Add(Consume(TokenType.Identifier, "Expect parameter name."));
+        //        } while (Match(TokenType.Comma));
+        //    }
+        //    Consume(TokenType.RightParenthesis, "Expect ')' after parameters.");
+        //    Consume(TokenType.LeftBrace, "Expect '{' before anonymous function body.");
+        //    List<Stmt> body = Block();
+        //    return new Stmt.Function(null, parameters, body);
+        //}
 
         private Stmt VarDeclaration()
         {
@@ -118,6 +169,7 @@ namespace Roux
             if (Match(TokenType.For)) return ForStatement();
             if (Match(TokenType.If)) return IfStatement();
             if (Match(TokenType.Print)) return PrintStatement();
+            if (Match(TokenType.Return)) return ReturnStatement();
             if (Match(TokenType.While)) return WhileStatement();
             if (Match(TokenType.LeftBrace)) return new Stmt.Block(Block());
 
@@ -230,6 +282,20 @@ namespace Roux
             return new Stmt.Print(value);
         }
 
+        private Stmt ReturnStatement()
+        {
+            Token keyword = Previous();
+            Expr value = null;
+            if (!Check(TokenType.Semicolon))
+            {
+                value = Expression();
+            }
+
+            // todo: going to cause issue
+            Consume(TokenType.Semicolon, "Expect ; after return value");
+            return new Stmt.Return(keyword, value);
+        }
+
         private Stmt WhileStatement()
         {
             _loopDepth++;
@@ -282,6 +348,7 @@ namespace Roux
         private Expr Expression()
         {
             return Separator();
+            //return Assignment();
         }
 
         /// <summary>
@@ -289,7 +356,38 @@ namespace Roux
         /// </summary>
         private Expr Separator()
         {
-            return BinaryExpression(Assignment, TokenType.Comma);
+            return BinaryExpression(Lambda, TokenType.Comma);
+        }
+
+        private Expr Lambda()
+        {
+            // might need to be one lower
+            //Expr expr = Assignment();
+
+            if (Match(TokenType.Fun))
+            {
+                Consume(TokenType.LeftParenthesis, $"Expect '(' after 'fun'");
+                List<Token> parameters = new List<Token>();
+                if (!Check(TokenType.RightParenthesis))
+                {
+                    do
+                    {
+                        if (parameters.Count >= 255)
+                        {
+                            Error(Peek(), "Cannot have more than 255 parameters.");
+                        }
+
+                        parameters.Add(Consume(TokenType.Identifier, "Expect parameter name."));
+                    } while (Match(TokenType.Comma));
+                }
+                Consume(TokenType.RightParenthesis, "Expect ')' after parameters.");
+                Consume(TokenType.LeftBrace, "Expect '{' before lambda function body.");
+                List<Stmt> body = Block();
+                return new Expr.Lambda(parameters, body);
+            }
+
+            //return expr;
+            return Assignment();
         }
 
         private Expr Assignment()
@@ -457,7 +555,7 @@ namespace Roux
 
         private Expr Suffix()
         {
-            Expr expr = Primary();
+            Expr expr = Call();
 
             if (Match(TokenType.MinusMinus, TokenType.PlusPlus) && expr is Expr.Variable)
             {
@@ -479,6 +577,24 @@ namespace Roux
             return expr;
         }
 
+        private Expr Call()
+        {
+            Expr expr = Primary();
+
+            while (true)
+            {
+                if (Match(TokenType.LeftParenthesis))
+                {
+                    expr = FinishCall(expr);
+                }
+                else
+                {
+                    break;
+                }
+            }
+            return expr;
+        }
+
         /// <summary>
         /// Generates an expr for primary expression (highest precedence, check for identifiers and groupings)
         /// </summary>
@@ -496,6 +612,11 @@ namespace Roux
             if (Match(TokenType.Identifier))
             {
                 return new Expr.Variable(Previous());
+            }
+
+            if (Peek().TokenType == TokenType.Fun)
+            {
+                return Lambda();
             }
 
             if (Match(TokenType.LeftParenthesis))
@@ -533,6 +654,27 @@ namespace Roux
         #endregion
 
         #region Helpers
+
+        private Expr FinishCall(Expr callee)
+        {
+            List<Expr> arguments = new List<Expr>();
+            if (!Check(TokenType.RightParenthesis))
+            {
+                do
+                {
+                    if (arguments.Count >= 255)
+                    {
+                        Error(Peek(), "Cannot have more than 255 arguments.");
+                    }
+                    //arguments.Add(Expression());
+                    arguments.Add(Assignment());
+                } while (Match(TokenType.Comma));
+            }
+
+            Token paren = Consume(TokenType.RightParenthesis, "Expect ')' after arguments.");
+
+            return new Expr.Call(callee, paren, arguments);
+        }
 
         /// <summary>
         /// Initiates the parser's recursive descent at a given step for the given tokens to match

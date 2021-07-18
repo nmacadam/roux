@@ -1,8 +1,21 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace Roux
 {
+    internal class TickCallable : ICallable
+    {
+        public int Arity => 0;
+
+        public string Name => "tick";
+
+        public object Call(Interpreter interpeter, List<object> arguments)
+        {
+            return System.Environment.TickCount / 1000.0;
+        }
+    }
+
     internal class InterpreterException : Exception 
     {
         public readonly Token Token;
@@ -14,11 +27,27 @@ namespace Roux
         }
     }
 
+    internal class ReturnException : Exception
+    {
+        public readonly object Value;
+
+        public ReturnException(object value)
+        {
+            Value = value;
+        }
+
+        public override IDictionary Data => null;
+        public override string StackTrace => null;
+    }
+
     internal class Interpreter : Expr.Visitor<object>, Stmt.Visitor<object>
     {
-        private Environment _environment = new Environment();
+        private readonly Environment _globals = new Environment();
+        private Environment _environment;
 
         private readonly IErrorReporter _errorReporter;
+
+        internal Environment Globals => _globals;
 
         private class BreakException : Exception { }
         private class ContinueException : Exception { }
@@ -26,6 +55,10 @@ namespace Roux
         public Interpreter(IErrorReporter errorReporter)
         {
             _errorReporter = errorReporter;
+
+            _globals.Define("tick", new TickCallable());
+
+            _environment = _globals;
         }
 
         public void Interpret(List<Stmt> statements)
@@ -87,6 +120,13 @@ namespace Roux
             return null;
         }
 
+        public object VisitFunctionStmt(Stmt.Function stmt)
+        {
+            RouxFunction function = new RouxFunction(stmt, _environment);
+            _environment.Define(stmt.Name.Lexeme, function);
+            return null;
+        }
+
         public object VisitIfStmt(Stmt.If stmt)
         {
             if (IsTruthy(Evaluate(stmt.Condition)))
@@ -105,6 +145,17 @@ namespace Roux
             object value = Evaluate(stmt.Expression);
             Console.WriteLine(Stringify(value));
             return null;
+        }
+
+        public object VisitReturnStmt(Stmt.Return stmt)
+        {
+            object value = null;
+            if (stmt.Value != null)
+            {
+                value = Evaluate(stmt.Value);
+            }
+
+            throw new ReturnException(value);
         }
 
         public object VisitVarStmt(Stmt.Var stmt)
@@ -205,7 +256,7 @@ namespace Roux
                     }
                     if (left is string && right is string)
                     {
-                        return (double)left + (double)right;
+                        return (string)left + (string)right;
                     }
 
                     // Try to ToString whatever the value is
@@ -224,9 +275,46 @@ namespace Roux
             throw new InterpreterException(null, null);
         }
 
+        public object VisitCallExpr(Expr.Call expr)
+        {
+            object callee = Evaluate(expr.Callee);
+
+            List<object> arguments = new List<object>();
+            foreach (Expr argument in expr.Arguments)
+            {
+                arguments.Add(Evaluate(argument));
+            }
+
+            if (!(callee is ICallable))
+            {
+                throw new InterpreterException(expr.Parenthesis, "Can only call functions and classes.");
+            }
+
+            ICallable function = (ICallable)callee;
+            if (arguments.Count != function.Arity)
+            {
+                throw new InterpreterException(expr.Parenthesis, $"Expected {function.Arity} arguments but got {arguments.Count}.");
+            }
+
+            return function.Call(this, arguments);
+        }
+
         public object VisitGroupingExpr(Expr.Grouping expr)
         {
             return Evaluate(expr.Expression);
+        }
+
+        public object VisitLambdaExpr(Expr.Lambda expr)
+        {
+            RouxLambda lambda = new RouxLambda(expr, _environment);
+
+            //if (stmt.Name != null)
+            //{
+            //    _environment.Define(stmt.Name.Lexeme, function);
+            //}
+
+            //return null;
+            return lambda;
         }
 
         public object VisitLiteralExpr(Expr.Literal expr)
