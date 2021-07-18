@@ -47,5 +47,10 @@
         {
             return $"{TokenType} {Lexeme} {Literal}";
         }
+
+        public Token Copy(TokenType newToken, string newLexeme = "")
+        {
+            return new Token(newToken, string.IsNullOrEmpty(newLexeme) ? Lexeme : newLexeme, Literal, Line);
+        }
     }
 }

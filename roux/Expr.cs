@@ -15,6 +15,7 @@ namespace Roux
 			T VisitLogicalExpr(Logical expr);
 			// T VisitSetExpr(Set expr);
 			T VisitSubscriptExpr(Subscript expr);
+			T VisitSuffixExpr(Suffix expr);
 			// T VisitSuperExpr(Super expr);
 			T VisitTernaryExpr(Ternary expr);
 			// T VisitThisExpr(This expr);
@@ -106,6 +107,25 @@ namespace Roux
 			public override T Accept<T>(Visitor<T> visitor)
 			{
 				return visitor.VisitSubscriptExpr(this);
+			}
+		}
+
+		public class Suffix : Expr
+		{
+			public readonly Token Name;
+			public readonly Token Operator;
+			public readonly Expr Value;
+
+			public Suffix(Token name, Token op, Expr value)
+			{
+				Name = name;
+				Operator = op;
+				Value = value;
+			}
+
+			public override T Accept<T>(Visitor<T> visitor)
+			{
+				return visitor.VisitSuffixExpr(this);
 			}
 		}
 

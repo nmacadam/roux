@@ -255,6 +255,25 @@ namespace Roux
             throw new System.NotImplementedException();
         }
 
+        public object VisitSuffixExpr(Expr.Suffix expr)
+        {
+            object value = Evaluate(expr.Value);
+            double temp = (double)value;
+
+            if (expr.Operator.TokenType == TokenType.MinusMinus)
+            {
+                value = (double)value - 1.0;
+            }
+            if (expr.Operator.TokenType == TokenType.PlusPlus)
+            {
+                value = (double)value + 1.0;
+            }
+
+            _environment.Assign(expr.Name, value);
+
+            return temp;
+        }
+
         public object VisitTernaryExpr(Expr.Ternary expr)
         {
             object left = Evaluate(expr.Left);
@@ -274,6 +293,12 @@ namespace Roux
                 case TokenType.Minus:
                     CheckNumberOperand(expr.Operator, right);
                     return -(double)right;
+                case TokenType.MinusMinus:
+                    CheckNumberOperand(expr.Operator, right);
+                    return (double)right - 1.0;
+                case TokenType.PlusPlus:
+                    CheckNumberOperand(expr.Operator, right);
+                    return (double)right + 1.0;
             }
 
             // Unreachable

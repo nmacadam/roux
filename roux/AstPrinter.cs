@@ -71,5 +71,10 @@ namespace Roux
         {
             return Parenthesize("var", expr);
         }
+
+        public string VisitSuffixExpr(Expr.Suffix expr)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

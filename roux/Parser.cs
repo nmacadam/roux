@@ -296,16 +296,36 @@ namespace Roux
         {
             Expr expr = Ternary();
 
-            if (Match(TokenType.Equal))
+            bool compound = Match(
+                TokenType.MinusEqual, 
+                TokenType.PlusEqual, 
+                TokenType.StarEqual, 
+                TokenType.SlashEqual, 
+                TokenType.PercentEqual
+            );
+
+            if (Match(TokenType.Equal) || compound)
             {
                 Token equals = Previous();
                 Expr value = Assignment();
 
+                // todo: handle get expr
+
                 if (expr is Expr.Variable)
                 {
                     Token name = ((Expr.Variable)expr).Name;
-                    return new Expr.Assign(name, value);
+                    switch (equals.TokenType)
+                    {
+                        case TokenType.MinusEqual: return new Expr.Assign(name, new Expr.Binary(expr, equals.Copy(TokenType.Minus), value));
+                        case TokenType.PlusEqual: return new Expr.Assign(name, new Expr.Binary(expr, equals.Copy(TokenType.Plus), value));
+                        case TokenType.StarEqual: return new Expr.Assign(name, new Expr.Binary(expr, equals.Copy(TokenType.Star), value));
+                        case TokenType.SlashEqual: return new Expr.Assign(name, new Expr.Binary(expr, equals.Copy(TokenType.Slash), value));
+                        case TokenType.PercentEqual: return new Expr.Assign(name, new Expr.Binary(expr, equals.Copy(TokenType.Percent), value));
+                        case TokenType.Equal: return new Expr.Assign(name, value);
+                    }
                 }
+
+                // todo: handle grouping
 
                 Error(equals, "Invalid assignment target");
             }
@@ -409,7 +429,54 @@ namespace Roux
                 return new Expr.Unary(op, right);
             }
 
-            return Primary();
+            return Prefix();
+        }
+
+        private Expr Prefix()
+        {
+            if (Match(TokenType.PlusPlus, TokenType.MinusMinus))
+            {
+                Token op = Previous();
+                Expr right = Prefix();
+                Expr value = new Expr.Literal(1.0);
+
+                if (right is Expr.Variable)
+                {
+                    Token name = ((Expr.Variable)right).Name;
+
+                    switch (op.TokenType)
+                    {
+                        case TokenType.MinusMinus: return new Expr.Assign(name, new Expr.Binary(right, op.Copy(TokenType.Minus), value));
+                        case TokenType.PlusPlus: return new Expr.Assign(name, new Expr.Binary(right, op.Copy(TokenType.Plus), value));
+                    }
+                }
+            }
+
+            return Suffix();
+        }
+
+        private Expr Suffix()
+        {
+            Expr expr = Primary();
+
+            if (Match(TokenType.MinusMinus, TokenType.PlusPlus) && expr is Expr.Variable)
+            {
+                Token op = Previous();
+
+                if (expr is Expr.Variable)
+                {
+                    Token name = ((Expr.Variable)expr).Name;
+                    Expr value = new Expr.Literal(1.0);
+
+                    return new Expr.Suffix(name, op, expr);
+                }
+
+                Error(op, "Invalid assignment target");
+            }
+
+            // todo: handle grouping
+
+            return expr;
         }
 
         /// <summary>
