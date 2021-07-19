@@ -4,8 +4,15 @@ namespace Roux
 {
     internal class RouxErrorReporter : IErrorReporter
     {
+        private IInputOutput _io;
+
         public bool HadError { get; protected set; }
         public bool HadRuntimeError { get; protected set; }
+
+        public RouxErrorReporter(IInputOutput io)
+        {
+            _io = io;
+        }
 
         public void Reset()
         {
@@ -52,18 +59,18 @@ namespace Roux
 
         public void RuntimeError(Token token, string message)
         {
-            Console.WriteLine($"[line {token.Line}] Runtime Error: {message}");
+            _io.Error($"[line {token.Line}] Runtime Error: {message}");
             HadRuntimeError = true;
         }
 
         private void ReportWarning(int line, string where, string message)
         {
-            Console.WriteLine($"[line {line}] Warning {where}: {message}");
+            _io.Error($"[line {line}] Warning {where}: {message}");
         }
 
         private void ReportError(int line, string where, string message)
         {
-            Console.WriteLine($"[line {line}] Parse Error {where}: {message}");
+            _io.Error($"[line {line}] Parse Error {where}: {message}");
             HadError = true;
         }
     }

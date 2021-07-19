@@ -47,6 +47,7 @@ namespace Roux
 
         private readonly Dictionary<Expr, int> _locals = new Dictionary<Expr, int>();
 
+        private readonly IInputOutput _io;
         private readonly IErrorReporter _errorReporter;
 
         internal Environment Globals => _globals;
@@ -54,8 +55,9 @@ namespace Roux
         private class BreakException : Exception { }
         private class ContinueException : Exception { }
 
-        public Interpreter(IErrorReporter errorReporter)
+        public Interpreter(IInputOutput io, IErrorReporter errorReporter)
         {
+            _io = io;
             _errorReporter = errorReporter;
 
             _globals.Define("tick", new TickCallable());
@@ -87,7 +89,7 @@ namespace Roux
             try
             {
                 object value = Evaluate(expression);
-                Console.WriteLine(Stringify(value));
+                _io.Output(Stringify(value));
                 return value;
             }
             catch (InterpreterException e)
@@ -145,7 +147,7 @@ namespace Roux
         public object VisitPrintStmt(Stmt.Print stmt)
         {
             object value = Evaluate(stmt.Expression);
-            Console.WriteLine(Stringify(value));
+            _io.Output(Stringify(value));
             return null;
         }
 
