@@ -13,25 +13,40 @@ namespace Roux
             HadRuntimeError = false;
         }
 
+        public void Warning(string message)
+        {
+            ReportWarning(-1, "", message);
+        }
+
+        public void Warning(int line, string message)
+        {
+            ReportWarning(line, "", message);
+        }
+
+        public void Warning(Token token, string message)
+        {
+            ReportWarning(token.Line, " at '" + token.Lexeme + "'", message);
+        }
+
         public void Error(string message)
         {
-            Report(-1, "", message);
+            ReportError(-1, "", message);
         }
 
         public void Error(int line, string message)
         {
-            Report(line, "", message);
+            ReportError(line, "", message);
         }
 
         public void Error(Token token, string message)
         {
             if (token.TokenType == TokenType.Eof)
             {
-                Report(token.Line, " at end", message);
+                ReportError(token.Line, " at end", message);
             }
             else
             {
-                Report(token.Line, " at '" + token.Lexeme + "'", message);
+                ReportError(token.Line, " at '" + token.Lexeme + "'", message);
             }
         }
 
@@ -41,7 +56,12 @@ namespace Roux
             HadRuntimeError = true;
         }
 
-        private void Report(int line, string where, string message)
+        private void ReportWarning(int line, string where, string message)
+        {
+            Console.WriteLine($"[line {line}] Warning {where}: {message}");
+        }
+
+        private void ReportError(int line, string where, string message)
         {
             Console.WriteLine($"[line {line}] Parse Error {where}: {message}");
             HadError = true;

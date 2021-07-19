@@ -45,6 +45,11 @@ namespace Roux
             throw new EnvironmentException(name, $"Undefined variable '{name.Lexeme}'.");
         }
 
+        public object GetAt(int distance, string name)
+        {
+            return Ancestor(distance)._values[name];
+        }
+
         public void Assign(Token name, object value)
         {
             if (_values.ContainsKey(name.Lexeme))
@@ -61,10 +66,25 @@ namespace Roux
             throw new EnvironmentException(name, $"Undefined variable '{name.Lexeme}'.");
         }
 
+        public void AssignAt(int distance, Token name, object value)
+        {
+            Ancestor(distance)._values[name.Lexeme] = value;
+        }
+
         public void Define(string name, object value)
         {
             // Note: this means roux can redefine a variable that already exists!
             _values[name] = value;
+        }
+
+        private Environment Ancestor(int distance)
+        {
+            Environment environment = this;
+            for (int i = 0; i < distance; i++)
+            {
+                environment = environment.Enclosing;
+            }
+            return environment;
         }
     }
 }

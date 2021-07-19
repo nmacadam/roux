@@ -1,0 +1,8 @@
+fun foo()
+{
+	print 1;
+	return;
+	print 2;
+}
+
+foo();

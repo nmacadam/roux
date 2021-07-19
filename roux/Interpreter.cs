@@ -45,6 +45,8 @@ namespace Roux
         private readonly Environment _globals = new Environment();
         private Environment _environment;
 
+        private readonly Dictionary<Expr, int> _locals = new Dictionary<Expr, int>();
+
         private readonly IErrorReporter _errorReporter;
 
         internal Environment Globals => _globals;
@@ -200,7 +202,14 @@ namespace Roux
         public object VisitAssignExpr(Expr.Assign expr)
         {
             object value = Evaluate(expr.Value);
-            _environment.Assign(expr.Name, value);
+            if (_locals.TryGetValue(expr, out int distance))
+            {
+                _environment.AssignAt(distance, expr.Name, value);
+            }
+            else
+            {
+                _globals.Assign(expr.Name, value);
+            }
             return value;
         }
 
@@ -395,12 +404,17 @@ namespace Roux
 
         public object VisitVariableExpr(Expr.Variable expr)
         {
-            return _environment.Get(expr.Name);
+            return LookUpVariable(expr.Name, expr);
         }
 
         #endregion
 
         #region Helpers
+
+        public void Resolve(Expr expr, int depth)
+        {
+            _locals.Add(expr, depth);
+        }
 
         /// <summary>
         /// Send the statement back through the interpreter's visitor implementation
@@ -436,6 +450,15 @@ namespace Roux
         private object Evaluate(Expr expr)
         {
             return expr.Accept(this);
+        }
+
+        private object LookUpVariable(Token name, Expr expr)
+        {
+            if (_locals.TryGetValue(expr, out int distance))
+            {
+                return _environment.GetAt(distance, name.Lexeme);
+            }
+            return _globals.Get(name);
         }
 
         /// <summary>

@@ -8,6 +8,21 @@ namespace RouxTests
         public bool HadError => false;
         public bool HadRuntimeError => false;
 
+        public void Warning(string message)
+        {
+
+        }
+
+        public void Warning(int line, string message)
+        {
+
+        }
+
+        public void Warning(Token token, string message)
+        {
+
+        }
+
         public void Error(string message)
         {
             Report(-1, "", message);

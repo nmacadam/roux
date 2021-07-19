@@ -74,12 +74,12 @@ namespace Roux
 
         public string VisitSuffixExpr(Expr.Suffix expr)
         {
-            throw new NotImplementedException();
+            return Parenthesize("suffix " + expr.Operator.Lexeme, expr.Value);
         }
 
         public string VisitCallExpr(Expr.Call expr)
         {
-            throw new NotImplementedException();
+            return Parenthesize("call", expr.Callee);
         }
 
         public string VisitLambdaExpr(Expr.Lambda expr)

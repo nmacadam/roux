@@ -62,6 +62,19 @@ namespace Roux
             //AstPrinter printer = new AstPrinter();
             //Console.WriteLine(printer.Print(expression));
 
+            if (_errorReporter.HadError)
+            {
+                return;
+            }
+
+            Resolver resolver = new Resolver(_interpreter, _errorReporter);
+            resolver.Resolve(statements);
+
+            if (_errorReporter.HadError)
+            {
+                return;
+            }
+
             _interpreter.Interpret(statements);
         }
     }
