@@ -115,13 +115,25 @@ namespace Roux
             //    superclass = new Expr.Variable(Previous());
             //}
             Consume(TokenType.LeftBrace, "Expect '{' before class body.");
+
             List<Stmt.Function> methods = new List<Stmt.Function>();
+            List<Stmt.Function> staticMethods = new List<Stmt.Function>();
+
             while (!Check(TokenType.RightBrace) && !IsAtEnd())
             {
-                methods.Add(Function("method"));
+                // handle vars
+                if (Match(TokenType.Static))
+                {
+                    staticMethods.Add(Function("method"));
+                }
+                else
+                {
+                    methods.Add(Function("method"));
+                }
+
             }
             Consume(TokenType.RightBrace, "Expect '}' after class body.");
-            return new Stmt.Class(name, superclass, methods);
+            return new Stmt.Class(name, superclass, methods, staticMethods);
         }
 
         private Stmt.Function Function(string kind)

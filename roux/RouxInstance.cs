@@ -6,8 +6,10 @@ namespace Roux
 {
     internal class RouxInstance
     {
-        private readonly RouxClass _klass;
+        private RouxClass _klass;
         private readonly Dictionary<string, object> _fields = new Dictionary<string, object>();
+
+        protected RouxClass klass { get => _klass; set => _klass = value; }
 
         public RouxInstance(RouxClass klass)
         {
@@ -19,6 +21,13 @@ namespace Roux
             if (_fields.ContainsKey(name.Lexeme))
             {
                 return _fields[name.Lexeme];
+            }
+
+            RouxFunction staticMethod = _klass.FindStaticMethod(name.Lexeme);
+            if (staticMethod != null)
+            {
+                // we don't want to bind a static method because it does not share the class's scope
+                return staticMethod;
             }
 
             RouxFunction method = _klass.FindMethod(name.Lexeme);

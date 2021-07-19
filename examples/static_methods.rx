@@ -1,0 +1,20 @@
+class Foo {
+	construct() {
+		this.a = 5;
+	}
+
+	static Bar() {
+		print "Bar is static";
+		print this.a;
+	}
+	
+	Baz() {
+		print "Baz is not static";
+		print this.a;
+	}
+}
+
+Foo.Bar();
+
+var foo = Foo();
+foo.Baz();

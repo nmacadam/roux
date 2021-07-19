@@ -135,7 +135,14 @@ namespace Roux
                 methods.Add(method.Name.Lexeme, function);
             }
 
-            RouxClass klass = new RouxClass(stmt.Name.Lexeme, methods);
+            Dictionary<string, RouxFunction> staticMethods = new Dictionary<string, RouxFunction>();
+            foreach (var method in stmt.StaticMethods)
+            {
+                RouxFunction function = new RouxFunction(method, _environment, false);
+                staticMethods.Add(method.Name.Lexeme, function);
+            }
+
+            RouxClass klass = new RouxClass(stmt.Name.Lexeme, methods, staticMethods);
             _environment.Assign(stmt.Name, klass);
             return null;
         }

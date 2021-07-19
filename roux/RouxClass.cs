@@ -4,19 +4,23 @@ using System.Text;
 
 namespace Roux
 {
-    internal class RouxClass : ICallable
+    internal class RouxClass : RouxInstance, ICallable
     {
         private readonly int _arity;
         private readonly string _name;
         private readonly Dictionary<string, RouxFunction> _methods = new Dictionary<string, RouxFunction>();
+        private readonly Dictionary<string, RouxFunction> _staticMethods = new Dictionary<string, RouxFunction>();
 
         public int Arity => _arity;
         public string Name => _name;
 
-        public RouxClass(string name, Dictionary<string, RouxFunction> methods)
+        public RouxClass(string name, Dictionary<string, RouxFunction> methods, Dictionary<string, RouxFunction> staticMethods)
+            : base(null)
         {
+            klass = this;
             _name = name;
             _methods = methods;
+            _staticMethods = staticMethods;
 
             // set arity based on constructor argument count
             RouxFunction constructor = FindMethod("construct");
@@ -44,6 +48,15 @@ namespace Roux
             if (_methods.ContainsKey(name))
             {
                 return _methods[name];
+            }
+            return null;
+        }
+
+        public RouxFunction FindStaticMethod(string name)
+        {
+            if (_staticMethods.ContainsKey(name))
+            {
+                return _staticMethods[name];
             }
             return null;
         }
