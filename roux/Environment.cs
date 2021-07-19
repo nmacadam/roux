@@ -4,15 +4,11 @@ using System.Text;
 
 namespace Roux
 {
-    internal class EnvironmentException : Exception
+    internal class EnvironmentException : RuntimeException
     {
-        public readonly Token Token;
-
         public EnvironmentException(Token token, string message)
-            : base(message)
-        {
-            Token = token;
-        }
+            : base(token, message)
+        {}
     }
 
     internal class Environment

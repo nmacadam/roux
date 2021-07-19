@@ -18,7 +18,7 @@
         Identifier, String, Number,
 
         // Keywords
-        And, Base, Break, Class, Construct, Continue, Else, False, For, Fun, If, Null, 
+        And, Base, Break, Class, Continue, Else, False, For, Fun, If, Null, 
         Operator, Or, Private, Protected, Public, Print, Return, Static, This, True, 
         Var, While, 
         

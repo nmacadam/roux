@@ -1,0 +1,15 @@
+class Sandwich {
+  construct(bread, meat, veg, cheese) {
+	this.bread = bread;
+	this.meat = meat;
+	this.veg = veg;
+	this.cheese = cheese;
+  }
+  
+  describe() {
+	print "the sandwich is two slices of " + this.bread + " with " + this.meat + ", " + this.veg + ", and " + this.cheese + ".";
+  }
+}
+
+var reuben = Sandwich("rye", "corned beef", "sauerkraut", "swiss cheese");
+reuben.describe();

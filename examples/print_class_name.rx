@@ -1,0 +1,10 @@
+class Bacon {
+  eat() {
+    print "Crunch crunch crunch!";
+  }
+}
+
+print Bacon; // Prints "Bacon".
+print Bacon(); // Prints "Bacon instance".
+
+Bacon().eat(); // Prints "Crunch crunch crunch!".

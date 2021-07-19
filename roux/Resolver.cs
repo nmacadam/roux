@@ -4,14 +4,6 @@ using System.Text;
 
 namespace Roux
 {
-    internal enum FunctionType
-    {
-        None,
-        Function,
-        Initializer,
-        Lambda,
-        Method
-    }
 
     internal class ResolverException : Exception
     {
@@ -27,6 +19,8 @@ namespace Roux
     internal class Resolver : Expr.Visitor<Empty>, Stmt.Visitor<Empty>
     {
         private enum VariableState { Declared, Defined, Read }
+        private enum FunctionType { None, Function, Constructor, Lambda, Method }
+        private enum ClassType { None, Class }
 
         private class Variable
         {
@@ -42,6 +36,7 @@ namespace Roux
         private readonly Interpreter _interpreter;
         private readonly Stack<Dictionary<string, Variable>> _scopes = new Stack<Dictionary<string, Variable>>();
         private FunctionType _currentFunction = FunctionType.None;
+        private ClassType _currentClass = ClassType.None;
 
         private readonly IErrorReporter _errorReporter;
 
@@ -78,6 +73,39 @@ namespace Roux
 
         public Empty VisitBreakStmt(Stmt.Break stmt)
         {
+            return default;
+        }
+
+        public Empty VisitClassStmt(Stmt.Class stmt)
+        {
+            // keep track of whether we are in a class or not to check class-specific keyword validity
+            ClassType enclosingClass = _currentClass;
+            _currentClass = ClassType.Class;
+
+            Declare(stmt.Name);
+            Define(stmt.Name);
+
+            // Push a new scope and add 'this' as a variable to the class
+            BeginScope();
+            _scopes.Peek().Add("this", new Variable(null, VariableState.Read));
+            
+            // resolve the class's methods
+            foreach (var method in stmt.Methods)
+            {
+                FunctionType declaration = FunctionType.Method;
+
+                if (method.Name.Lexeme.Equals("construct"))
+                {
+                    declaration = FunctionType.Constructor;
+                }
+
+                ResolveFunction(method, declaration);
+            }
+
+            EndScope();
+
+            _currentClass = enclosingClass;
+
             return default;
         }
 
@@ -125,6 +153,11 @@ namespace Roux
             }
             if (stmt.Value != null)
             {
+                if (_currentFunction == FunctionType.Constructor)
+                {
+                    throw new ResolverException(stmt.Keyword, "Can't return a value from a constructor.");
+                }
+
                 Resolve(stmt.Value);
             }
             return default;
@@ -177,6 +210,12 @@ namespace Roux
             return default;
         }
 
+        public Empty VisitGetExpr(Expr.Get expr)
+        {
+            Resolve(expr.Object);
+            return default;
+        }
+
         public Empty VisitGroupingExpr(Expr.Grouping expr)
         {
             Resolve(expr.Expression);
@@ -208,6 +247,13 @@ namespace Roux
             return default;
         }
 
+        public Empty VisitSetExpr(Expr.Set expr)
+        {
+            Resolve(expr.Value);
+            Resolve(expr.Object);
+            return default;
+        }
+
         public Empty VisitSubscriptExpr(Expr.Subscript expr)
         {
             return default;
@@ -224,6 +270,19 @@ namespace Roux
             Resolve(expr.Left);
             Resolve(expr.Middle);
             Resolve(expr.Right);
+            return default;
+        }
+
+        public Empty VisitThisExpr(Expr.This expr)
+        {
+            if (_currentClass == ClassType.None)
+            {
+                throw new ResolverException(expr.Keyword, "Can't use 'this' outside of a class.");
+            }
+
+            // 'this' gets resolved like any other variable, it is
+            // effectively a property that is automatically bound to all class instances (see VisitClassStmt())
+            ResolveLocal(expr, expr.Keyword);
             return default;
         }
 

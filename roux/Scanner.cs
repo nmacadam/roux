@@ -27,7 +27,6 @@ namespace Roux
             {"base",        TokenType.Base        },
             {"break",       TokenType.Break       },
             {"class",       TokenType.Class       },
-            {"construct",   TokenType.Construct   },
             {"continue",    TokenType.Continue    },
             {"else",        TokenType.Else        },
             {"false",       TokenType.False       },

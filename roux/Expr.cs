@@ -9,17 +9,17 @@ namespace Roux
 			T VisitAssignExpr(Assign expr);
 			T VisitBinaryExpr(Binary expr);
 			T VisitCallExpr(Call expr);
-			// T VisitGetExpr(Get expr);
+			T VisitGetExpr(Get expr);
 			T VisitGroupingExpr(Grouping expr);
 			T VisitLambdaExpr(Lambda expr);
 			T VisitLiteralExpr(Literal expr);
 			T VisitLogicalExpr(Logical expr);
-			// T VisitSetExpr(Set expr);
+			T VisitSetExpr(Set expr);
 			T VisitSubscriptExpr(Subscript expr);
 			T VisitSuffixExpr(Suffix expr);
 			// T VisitSuperExpr(Super expr);
 			T VisitTernaryExpr(Ternary expr);
-			// T VisitThisExpr(This expr);
+			T VisitThisExpr(This expr);
 			T VisitUnaryExpr(Unary expr);
 			T VisitVariableExpr(Variable expr);
 		}
@@ -43,44 +43,6 @@ namespace Roux
 			}
 		}
 
-		internal class Call : Expr
-		{
-			public readonly Expr Callee;
-			public readonly Token Parenthesis;
-			public readonly List<Expr> Arguments;
-
-			public Call(Expr callee, Token parenthesis, List<Expr> arguments)
-			{
-				Callee = callee;
-				Parenthesis = parenthesis;
-				Arguments = arguments;
-			}
-
-			public override T Accept<T>(Visitor<T> visitor)
-			{
-				return visitor.VisitCallExpr(this);
-			}
-		}
-
-		internal class Ternary : Expr
-		{
-			public readonly Expr Left;
-			public readonly Expr Middle;
-			public readonly Expr Right;
-
-			public Ternary(Expr left, Expr middle, Expr right)
-			{
-				Left = left;
-				Middle = middle;
-				Right = right;
-			}
-
-			public override T Accept<T>(Visitor<T> visitor)
-			{
-				return visitor.VisitTernaryExpr(this);
-			}
-		}
-
 		internal class Binary : Expr
 		{
 			public readonly Expr Left;
@@ -100,6 +62,42 @@ namespace Roux
 			}
 		}
 
+		internal class Call : Expr
+		{
+			public readonly Expr Callee;
+			public readonly Token Parenthesis;
+			public readonly List<Expr> Arguments;
+
+			public Call(Expr callee, Token parenthesis, List<Expr> arguments)
+			{
+				Callee = callee;
+				Parenthesis = parenthesis;
+				Arguments = arguments;
+			}
+
+			public override T Accept<T>(Visitor<T> visitor)
+			{
+				return visitor.VisitCallExpr(this);
+			}
+		}
+
+		internal class Get : Expr
+		{
+			public readonly Expr Object;
+			public readonly Token Name;
+
+			public Get(Expr objekt, Token name)
+			{
+				Object = objekt;
+				Name = name;
+			}
+
+			public override T Accept<T>(Visitor<T> visitor)
+			{
+				return visitor.VisitGetExpr(this);
+			}
+		}
+
 		internal class Grouping : Expr
 		{
 			public readonly Expr Expression;
@@ -112,40 +110,6 @@ namespace Roux
 			public override T Accept<T>(Visitor<T> visitor)
 			{
 				return visitor.VisitGroupingExpr(this);
-			}
-		}
-
-		internal class Subscript : Expr
-		{
-			public readonly Expr Expression;
-
-			public Subscript(Expr expression)
-			{
-				Expression = expression;
-			}
-
-			public override T Accept<T>(Visitor<T> visitor)
-			{
-				return visitor.VisitSubscriptExpr(this);
-			}
-		}
-
-		public class Suffix : Expr
-		{
-			public readonly Token Name;
-			public readonly Token Operator;
-			public readonly Expr Value;
-
-			public Suffix(Token name, Token op, Expr value)
-			{
-				Name = name;
-				Operator = op;
-				Value = value;
-			}
-
-			public override T Accept<T>(Visitor<T> visitor)
-			{
-				return visitor.VisitSuffixExpr(this);
 			}
 		}
 
@@ -197,6 +161,93 @@ namespace Roux
 			public override T Accept<T>(Visitor<T> visitor)
 			{
 				return visitor.VisitLogicalExpr(this);
+			}
+		}
+
+		internal class Set : Expr
+		{
+			public readonly Expr Object;
+			public readonly Token Name;
+			public readonly Expr Value;
+
+			public Set(Expr objekt, Token name, Expr value)
+			{
+				Object = objekt;
+				Name = name;
+				Value = value;
+			}
+
+			public override T Accept<T>(Visitor<T> visitor)
+			{
+				return visitor.VisitSetExpr(this);
+			}
+		}
+
+		internal class Subscript : Expr
+		{
+			public readonly Expr Expression;
+
+			public Subscript(Expr expression)
+			{
+				Expression = expression;
+			}
+
+			public override T Accept<T>(Visitor<T> visitor)
+			{
+				return visitor.VisitSubscriptExpr(this);
+			}
+		}
+
+		public class Suffix : Expr
+		{
+			public readonly Token Name;
+			public readonly Token Operator;
+			public readonly Expr Value;
+
+			public Suffix(Token name, Token op, Expr value)
+			{
+				Name = name;
+				Operator = op;
+				Value = value;
+			}
+
+			public override T Accept<T>(Visitor<T> visitor)
+			{
+				return visitor.VisitSuffixExpr(this);
+			}
+		}
+
+		internal class Ternary : Expr
+		{
+			public readonly Expr Left;
+			public readonly Expr Middle;
+			public readonly Expr Right;
+
+			public Ternary(Expr left, Expr middle, Expr right)
+			{
+				Left = left;
+				Middle = middle;
+				Right = right;
+			}
+
+			public override T Accept<T>(Visitor<T> visitor)
+			{
+				return visitor.VisitTernaryExpr(this);
+			}
+		}
+
+		internal class This : Expr
+		{
+			public readonly Token Keyword;
+
+			public This(Token keyword)
+			{
+				Keyword = keyword;
+			}
+
+			public override T Accept<T>(Visitor<T> visitor)
+			{
+				return visitor.VisitThisExpr(this);
 			}
 		}
 

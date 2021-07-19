@@ -16,15 +16,22 @@ namespace Roux
         }
     }
 
-    internal class InterpreterException : Exception 
+    internal class RuntimeException : Exception
     {
         public readonly Token Token;
 
-        public InterpreterException(Token op, string message)
+        public RuntimeException(Token op, string message)
             : base(message)
         {
             Token = op;
         }
+    }
+
+    internal class InterpreterException : RuntimeException 
+    {
+        public InterpreterException(Token op, string message)
+            : base(op, message)
+        { }
     }
 
     internal class ReturnException : Exception
@@ -82,6 +89,10 @@ namespace Roux
             {
                 _errorReporter.RuntimeError(e.Token, e.Message);
             }
+            catch (RuntimeException e)
+            {
+                _errorReporter.RuntimeError(e.Token, e.Message);
+            }
         }
 
         public object InterpretExpression(Expr expression)
@@ -113,6 +124,22 @@ namespace Roux
             throw new BreakException();
         }
 
+        public object VisitClassStmt(Stmt.Class stmt)
+        {
+            _environment.Define(stmt.Name.Lexeme, null);
+
+            Dictionary<string, RouxFunction> methods = new Dictionary<string, RouxFunction>();
+            foreach (var method in stmt.Methods)
+            {
+                RouxFunction function = new RouxFunction(method, _environment, method.Name.Lexeme.Equals("construct"));
+                methods.Add(method.Name.Lexeme, function);
+            }
+
+            RouxClass klass = new RouxClass(stmt.Name.Lexeme, methods);
+            _environment.Assign(stmt.Name, klass);
+            return null;
+        }
+
         public object VisitContinueStmt(Stmt.Continue stmt)
         {
             throw new ContinueException();
@@ -126,7 +153,7 @@ namespace Roux
 
         public object VisitFunctionStmt(Stmt.Function stmt)
         {
-            RouxFunction function = new RouxFunction(stmt, _environment);
+            RouxFunction function = new RouxFunction(stmt, _environment, false);
             _environment.Define(stmt.Name.Lexeme, function);
             return null;
         }
@@ -310,6 +337,17 @@ namespace Roux
             return function.Call(this, arguments);
         }
 
+        public object VisitGetExpr(Expr.Get expr)
+        {
+            object obj = Evaluate(expr.Object);
+            if (obj is RouxInstance rouxInstance)
+            {
+                return rouxInstance.Get(expr.Name);
+            }
+
+            throw new InterpreterException(expr.Name, "Only instances have properties.");
+        }
+
         public object VisitGroupingExpr(Expr.Grouping expr)
         {
             return Evaluate(expr.Expression);
@@ -349,6 +387,21 @@ namespace Roux
             return Evaluate(expr.Right);
         }
 
+        public object VisitSetExpr(Expr.Set expr)
+        {
+            object obj = Evaluate(expr.Object);
+
+            if (obj is RouxInstance rouxInstance)
+            {
+                object value = Evaluate(expr.Value);
+                rouxInstance.Set(expr.Name, value);
+
+                return value;
+            }
+
+            throw new InterpreterException(expr.Name, "Only instances have fields.");
+        }
+
         public object VisitSubscriptExpr(Expr.Subscript expr)
         {
             throw new System.NotImplementedException();
@@ -380,6 +433,13 @@ namespace Roux
             object right = Evaluate(expr.Right);
 
             return IsTruthy(left) ? middle : right;
+        }
+
+        public object VisitThisExpr(Expr.This expr)
+        {
+            // interpreting 'this' is the same as interpreting a variable since
+            // it is implemented as one
+            return LookUpVariable(expr.Keyword, expr);
         }
 
         public object VisitUnaryExpr(Expr.Unary expr)

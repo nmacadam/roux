@@ -18,7 +18,7 @@ namespace Roux
 		{
 			T VisitBlockStmt(Block stmt);
 			T VisitBreakStmt(Break stmt);
-			// T VisitClassStmt(Class stmt);
+			T VisitClassStmt(Class stmt);
 			T VisitContinueStmt(Continue stmt);
 			T VisitExpressionStmt(ExpressionStmt stmt);
 			T VisitFunctionStmt(Function stmt);
@@ -51,6 +51,25 @@ namespace Roux
 			public override T Accept<T>(Visitor<T> visitor)
 			{
 				return visitor.VisitBreakStmt(this);
+			}
+		}
+
+		internal class Class : Stmt
+		{
+			public readonly Token Name;
+			public readonly Expr Superclass;
+			public readonly List<Stmt.Function> Methods;
+
+			public Class(Token name, Expr superclass, List<Stmt.Function> methods)
+			{
+				Name = name;
+				Superclass = superclass;
+				Methods = methods;
+			}
+
+			public override T Accept<T>(Visitor<T> visitor)
+			{
+				return visitor.VisitClassStmt(this);
 			}
 		}
 

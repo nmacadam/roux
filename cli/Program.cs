@@ -5,7 +5,7 @@ namespace RouxCLI
 {
     class Program
     {
-        private static RouxInstance _roux = new RouxInstance();
+        private static RouxEnvironment _roux = new RouxEnvironment();
 
         static void Main(string[] args)
         {
@@ -18,7 +18,8 @@ namespace RouxCLI
             }
             else
             {
-                RunPrompt();
+                RunFile(@"D:\Development\roux\examples\constructors.rx");
+                //RunPrompt();
             }
         }
 

@@ -83,7 +83,10 @@ namespace Roux
         {
             try
             {
-                //if (Match(TokenType.Class)) return ClassDeclaration();
+                if (Match(TokenType.Class))
+                {
+                    return ClassDeclaration();
+                }
                 if (Match(TokenType.Fun))
                 {
                     return Function("function");
@@ -100,6 +103,25 @@ namespace Roux
                 Synchronize();
                 return null;
             }
+        }
+
+        private Stmt ClassDeclaration()
+        {
+            Token name = Consume(TokenType.Identifier, "Expect class name.");
+            Expr superclass = null;
+            //if (Match(TokenType.Less))
+            //{
+            //    Consume(TokenType.Identifier, "Expect superclass name.");
+            //    superclass = new Expr.Variable(Previous());
+            //}
+            Consume(TokenType.LeftBrace, "Expect '{' before class body.");
+            List<Stmt.Function> methods = new List<Stmt.Function>();
+            while (!Check(TokenType.RightBrace) && !IsAtEnd())
+            {
+                methods.Add(Function("method"));
+            }
+            Consume(TokenType.RightBrace, "Expect '}' after class body.");
+            return new Stmt.Class(name, superclass, methods);
         }
 
         private Stmt.Function Function(string kind)
@@ -407,8 +429,10 @@ namespace Roux
                 Token equals = Previous();
                 Expr value = Assignment();
 
-                // todo: handle get expr
-
+                if (expr is Expr.Get get)
+                {
+                    return new Expr.Set(get.Object, get.Name, value);
+                }
                 if (expr is Expr.Variable)
                 {
                     Token name = ((Expr.Variable)expr).Name;
@@ -587,6 +611,11 @@ namespace Roux
                 {
                     expr = FinishCall(expr);
                 }
+                else if (Match(TokenType.Dot))
+                {
+                    Token name = Consume(TokenType.Identifier, "Expect property name after '.'.");
+                    expr = new Expr.Get(expr, name);
+                }
                 else
                 {
                     break;
@@ -607,6 +636,11 @@ namespace Roux
             if (Match(TokenType.Number, TokenType.String))
             {
                 return new Expr.Literal(Previous().Literal);
+            }
+
+            if (Match(TokenType.This))
+            {
+                return new Expr.This(Previous());
             }
 
             if (Match(TokenType.Identifier))
