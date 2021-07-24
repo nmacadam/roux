@@ -2,7 +2,7 @@
 
 namespace Roux
 {
-    internal class RouxFunction : ICallable
+    public class RouxFunction : IInternalCallable
     {
         private readonly Stmt.Function _declaration;
         private readonly Environment _closure;
@@ -11,14 +11,19 @@ namespace Roux
         public int Arity => _declaration.Parameters.Count;
         public string Name => _declaration.Name.Lexeme;
 
-        public RouxFunction(Stmt.Function declaration, Environment closure, bool isConstructor)
+        internal RouxFunction(Stmt.Function declaration, Environment closure, bool isConstructor)
         {
             _declaration = declaration;
             _closure = closure;
             _isConstructor = isConstructor;
         }
+        
+        public object Call(RouxRuntime runtime, List<object> arguments)
+        {
+            return ((IInternalCallable)this).Call(runtime.Interpreter, arguments);
+        }
 
-        public object Call(Interpreter interpreter, List<object> arguments)
+        object IInternalCallable.Call(Interpreter interpreter, List<object> arguments)
         {
             Environment environment = new Environment(_closure);
             for (int i = 0; i < _declaration.Parameters.Count; i++)
@@ -66,7 +71,7 @@ namespace Roux
         }
     }
 
-    internal class RouxLambda : ICallable
+    internal class RouxLambda : IInternalCallable
     {
         private readonly Expr.Lambda _declaration;
         private readonly Environment _closure;
@@ -80,7 +85,12 @@ namespace Roux
             _closure = closure;
         }
 
-        public object Call(Interpreter interpreter, List<object> arguments)
+        public object Call(RouxRuntime runtime, List<object> arguments)
+        {
+            return ((IInternalCallable)this).Call(runtime.Interpreter, arguments);
+        }
+
+        object IInternalCallable.Call(Interpreter interpreter, List<object> arguments)
         {
             Environment environment = new Environment(_closure);
             for (int i = 0; i < _declaration.Parameters.Count; i++)

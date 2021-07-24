@@ -4,10 +4,15 @@ using System.Text;
 
 namespace Roux
 {
-    internal interface ICallable
+    public interface ICallable
     {
         int Arity { get; }
         string Name { get; }
+        object Call(RouxRuntime runtime, List<object> arguments);
+    }
+    
+    internal interface IInternalCallable : ICallable
+    {
         object Call(Interpreter interpeter, List<object> arguments);
     }
 }

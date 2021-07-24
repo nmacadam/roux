@@ -4,12 +4,17 @@ class Sandwich {
 	this.meat = meat;
 	this.veg = veg;
 	this.cheese = cheese;
+	
+	print "made a sandwich.";
   }
   
   describe() {
 	print "the sandwich is two slices of " + this.bread + " with " + this.meat + ", " + this.veg + ", and " + this.cheese + ".";
   }
+  
+  static define() {
+	print "Two or more slices of bread with a filling such as meat or cheese placed between them.";
+  }
 }
 
-var reuben = Sandwich("rye", "corned beef", "sauerkraut", "swiss cheese");
-reuben.describe();
+var foo = "hello world";

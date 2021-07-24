@@ -1,4 +1,4 @@
-fizzbuzz(start, end)
+fun fizzbuzz(start, end)
 {
     for (var i = 0; i < end; i++)
     {
@@ -9,4 +9,4 @@ fizzbuzz(start, end)
     }
 }
 
-fizzbuzz(1, 15);
+// fizzbuzz(1, 15);

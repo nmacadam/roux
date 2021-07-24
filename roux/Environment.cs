@@ -4,13 +4,6 @@ using System.Text;
 
 namespace Roux
 {
-    internal class EnvironmentException : RuntimeException
-    {
-        public EnvironmentException(Token token, string message)
-            : base(token, message)
-        {}
-    }
-
     internal class Environment
     {
         public readonly Environment Enclosing;
@@ -61,6 +54,23 @@ namespace Roux
 
             throw new EnvironmentException(name, $"Undefined variable '{name.Lexeme}'.");
         }
+        
+        public void Assign(string lexeme, object value)
+        {
+            if (_values.ContainsKey(lexeme))
+            {
+                _values[lexeme] = value;
+                return;
+            }
+            if (Enclosing != null)
+            {
+                Enclosing.Assign(lexeme, value);
+                return;
+            }
+
+            // throw new EnvironmentException(name, $"Undefined variable '{name.Lexeme}'.");
+            throw new Exception($"Undefined variable '{lexeme}'.");
+        }
 
         public void AssignAt(int distance, Token name, object value)
         {
@@ -71,6 +81,22 @@ namespace Roux
         {
             // Note: this means roux can redefine a variable that already exists!
             _values[name] = value;
+        }
+
+        internal object Fetch(string lexeme, bool checkEnclosing)
+        {
+            if (_values.ContainsKey(lexeme))
+            {
+                return _values[lexeme];
+            }
+            if (checkEnclosing && Enclosing != null)
+            {
+                return Enclosing.Fetch(lexeme, true);
+            }
+
+            // Note: only throws error if an undefined reference is evaluated
+            //throw new EnvironmentException(name, $"Undefined variable '{name.Lexeme}'.");
+            throw new Exception($"Undefined variable '{lexeme}'.");
         }
 
         private Environment Ancestor(int distance)

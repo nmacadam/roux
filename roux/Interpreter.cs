@@ -4,35 +4,17 @@ using System.Collections.Generic;
 
 namespace Roux
 {
-    internal class TickCallable : ICallable
-    {
-        public int Arity => 0;
-
-        public string Name => "tick";
-
-        public object Call(Interpreter interpeter, List<object> arguments)
-        {
-            return System.Environment.TickCount / 1000.0;
-        }
-    }
-
-    internal class RuntimeException : Exception
-    {
-        public readonly Token Token;
-
-        public RuntimeException(Token op, string message)
-            : base(message)
-        {
-            Token = op;
-        }
-    }
-
-    internal class InterpreterException : RuntimeException 
-    {
-        public InterpreterException(Token op, string message)
-            : base(op, message)
-        { }
-    }
+    // internal class TickCallable : ICallable
+    // {
+    //     public int Arity => 0;
+    //
+    //     public string Name => "tick";
+    //
+    //     public object Call(Interpreter interpeter, List<object> arguments)
+    //     {
+    //         return System.Environment.TickCount / 1000.0;
+    //     }
+    // }
 
     internal class ReturnException : Exception
     {
@@ -67,7 +49,7 @@ namespace Roux
             _io = io;
             _errorReporter = errorReporter;
 
-            _globals.Define("tick", new TickCallable());
+            //_globals.Define("tick", new TickCallable());
 
             _environment = _globals;
         }
@@ -109,6 +91,21 @@ namespace Roux
             }
 
             return null;
+        }
+        
+        public static object SanitizeObject(object o)
+        {
+            if (o is int || o is float || o is long)
+                return Convert.ToDouble(o);
+            return o;
+        }
+
+        public static void SanitizeObjects(object[] objs)
+        {
+            for (int i = 0; i < objs.Length; i++)
+            {
+                objs[i] = SanitizeObject(objs[i]);
+            }
         }
 
         #region Statement Visiting
@@ -341,7 +338,7 @@ namespace Roux
                 throw new InterpreterException(expr.Parenthesis, $"Expected {function.Arity} arguments but got {arguments.Count}.");
             }
 
-            return function.Call(this, arguments);
+            return ((IInternalCallable)function).Call(this, arguments);
         }
 
         public object VisitGetExpr(Expr.Get expr)

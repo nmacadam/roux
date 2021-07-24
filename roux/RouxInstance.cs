@@ -4,33 +4,33 @@ using System.Text;
 
 namespace Roux
 {
-    internal class RouxInstance
+    public class RouxInstance
     {
-        private RouxClass _klass;
+        private RouxClass _class;
         private readonly Dictionary<string, object> _fields = new Dictionary<string, object>();
 
-        protected RouxClass klass { get => _klass; set => _klass = value; }
+        public RouxClass Class { get => _class; protected set => _class = value; }
 
-        public RouxInstance(RouxClass klass)
+        internal RouxInstance(RouxClass @class)
         {
-            _klass = klass;
+            _class = @class;
         }
 
-        public object Get(Token name)
+        public object Get(string name)
         {
-            if (_fields.ContainsKey(name.Lexeme))
+            if (_fields.ContainsKey(name))
             {
-                return _fields[name.Lexeme];
+                return _fields[name];
             }
 
-            RouxFunction staticMethod = _klass.FindStaticMethod(name.Lexeme);
+            RouxFunction staticMethod = _class.FindStaticMethod(name);
             if (staticMethod != null)
             {
                 // we don't want to bind a static method because it does not share the class's scope
                 return staticMethod;
             }
 
-            RouxFunction method = _klass.FindMethod(name.Lexeme);
+            RouxFunction method = _class.FindMethod(name);
             if (method != null)
             {
                 // bind the method to this instance with a new environment for it's scope within the class
@@ -38,17 +38,38 @@ namespace Roux
                 return method.Bind(this);
             }
 
-            throw new RuntimeException(name, $"Undefined property '{name.Lexeme}'.");
+            throw new RouxException($"Undefined property '{name}'.");
         }
 
-        public void Set(Token name, object value)
+        public void Set(string name, object value)
+        {
+            if (!_fields.ContainsKey(name))
+            {
+                throw new RouxException($"Undefined property '{name}'.");
+            }
+            _fields[name] = value;
+        }
+
+        internal object Get(Token name)
+        {
+            try
+            {
+                return Get(name.Lexeme);
+            }
+            catch (RouxException e)
+            {
+                throw new RuntimeException(name, e.Message);
+            }
+        }
+
+        internal void Set(Token name, object value)
         {
             _fields[name.Lexeme] = value;
         }
 
         public override string ToString()
         {
-            return $"{_klass.Name} instance";
+            return $"{_class.Name} instance";
         }
     }
 }

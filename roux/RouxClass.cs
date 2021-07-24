@@ -4,31 +4,33 @@ using System.Text;
 
 namespace Roux
 {
-    internal class RouxClass : RouxInstance, ICallable
+    public class RouxClass : RouxInstance, IInternalCallable
     {
-        private readonly int _arity;
-        private readonly string _name;
-        private readonly Dictionary<string, RouxFunction> _methods = new Dictionary<string, RouxFunction>();
-        private readonly Dictionary<string, RouxFunction> _staticMethods = new Dictionary<string, RouxFunction>();
+        private readonly Dictionary<string, RouxFunction> _methods;
+        private readonly Dictionary<string, RouxFunction> _staticMethods;
 
-        public int Arity => _arity;
-        public string Name => _name;
+        public int Arity { get; }
+        public string Name { get; }
 
-        public RouxClass(string name, Dictionary<string, RouxFunction> methods, Dictionary<string, RouxFunction> staticMethods)
+        internal RouxClass(string name, Dictionary<string, RouxFunction> methods, Dictionary<string, RouxFunction> staticMethods)
             : base(null)
         {
-            klass = this;
-            _name = name;
+            Class = this;
+            Name = name;
             _methods = methods;
             _staticMethods = staticMethods;
 
             // set arity based on constructor argument count
             RouxFunction constructor = FindMethod("construct");
-            _arity = constructor == null ? 0 : constructor.Arity;
+            Arity = constructor == null ? 0 : constructor.Arity;
         }
 
+        public object Call(RouxRuntime runtime, List<object> arguments)
+        {
+            return ((IInternalCallable)this).Call(runtime.Interpreter, arguments);
+        }
 
-        public object Call(Interpreter interpreter, List<object> arguments)
+        object IInternalCallable.Call(Interpreter interpreter, List<object> arguments)
         {
             // When a class is called (i.e. Foo()), an instance is created
             RouxInstance instance = new RouxInstance(this);
@@ -37,13 +39,13 @@ namespace Roux
             RouxFunction constructor = FindMethod("construct");
             if (constructor != null)
             {
-                constructor.Bind(instance).Call(interpreter, arguments);
+                ((IInternalCallable)constructor.Bind(instance)).Call(interpreter, arguments);
             }
 
             return instance;
         }
 
-        public RouxFunction FindMethod(string name)
+        internal RouxFunction FindMethod(string name)
         {
             if (_methods.ContainsKey(name))
             {
@@ -52,7 +54,7 @@ namespace Roux
             return null;
         }
 
-        public RouxFunction FindStaticMethod(string name)
+        internal RouxFunction FindStaticMethod(string name)
         {
             if (_staticMethods.ContainsKey(name))
             {
@@ -63,7 +65,7 @@ namespace Roux
 
         public override string ToString()
         {
-            return _name;
+            return Name;
         }
     }
 }

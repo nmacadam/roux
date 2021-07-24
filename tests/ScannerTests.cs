@@ -70,7 +70,7 @@ namespace RouxTests
         {
             Assert.Throws<AssertionException>(() =>
             {
-                string input = "ง";
+                string input = "ยง";
                 Scanner scanner = new Scanner(input, _errorReporter);
                 List<Token> tokens = scanner.ScanTokens();
             });
