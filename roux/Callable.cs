@@ -16,15 +16,15 @@ namespace Roux
             new FunctionArguments() { args = arguments };
     }
     
-    internal class Callable : IInternalCallable
+    public class Callable : ICallable
     {
-        private readonly Func<Interpreter, FunctionArguments, object> _func;
+        private readonly Func<RouxRuntime, FunctionArguments, object> _func;
         private readonly int _arity;
 
         public int Arity => _arity;
         public string Name => "callable";
 
-        public Callable(int arity, Func<Interpreter, FunctionArguments, object> func)
+        public Callable(int arity, Func<RouxRuntime, FunctionArguments, object> func)
         {
             _arity = arity;
             _func = func;
@@ -36,13 +36,13 @@ namespace Roux
             _func = (interp, funcArgs) => func(funcArgs);
         }
 
-        public Callable(int arity, Action<Interpreter> func)
+        public Callable(int arity, Action<RouxRuntime> func)
         {
             _arity = arity;
             _func = (interp, funcArgs) => { func(interp); return null; };
         }
 
-        public Callable(int arity, Action<Interpreter, FunctionArguments> func)
+        public Callable(int arity, Action<RouxRuntime, FunctionArguments> func)
         {
             _arity = arity;
             _func = (interp, funcArgs) => { func(interp, funcArgs); return null; };
@@ -68,17 +68,17 @@ namespace Roux
         
         public object Call(RouxRuntime runtime, List<object> arguments)
         {
-            return Call(runtime.Interpreter, arguments);
+            return Interpreter.SanitizeObject(_func?.Invoke(runtime, new FunctionArguments() { args = arguments }));
         }
 
-        public object Call(Interpreter interpreter, List<object> funcArgs)
-        {
-            return Interpreter.SanitizeObject(_func?.Invoke(interpreter, new FunctionArguments() { args = funcArgs })); ;
-        }
+        // object IInternalCallable.Call(Interpreter interpreter, List<object> funcArgs)
+        // {
+        //     //return Interpreter.SanitizeObject(_func?.Invoke(interpreter, new FunctionArguments() { args = funcArgs })); ;
+        // }
         
-        public object Call(Interpreter interpreter, FunctionArguments funcArgs)
-        {
-            return Interpreter.SanitizeObject(_func?.Invoke(interpreter, funcArgs));
-        }
+        // public object Call(Interpreter interpreter, FunctionArguments funcArgs)
+        // {
+        //     return Interpreter.SanitizeObject(_func?.Invoke(interpreter, funcArgs));
+        // }
     }
 }

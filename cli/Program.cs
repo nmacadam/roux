@@ -18,7 +18,7 @@ namespace RouxCLI
             }
             else
             {
-                RunFile(@"D:\Development\roux\examples\array.rx");
+                RunFile(@"D:\Development\roux\examples\list.rx");
                 //RunPrompt();
             }
         }

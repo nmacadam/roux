@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using Roux.StandardLibrary;
 
 [assembly: InternalsVisibleTo("Tests")]
 [assembly: InternalsVisibleTo("Tools")]
@@ -16,18 +17,43 @@ namespace Roux
 
         internal Interpreter Interpreter => _interpreter;
 
-        public RouxRuntime()
+        private readonly IRouxLibraryBinder[] _defaultBinders = 
+        {
+            new RouxStandardLibrary()
+        };
+
+        public RouxRuntime(params IRouxLibraryBinder[] binders)
         {
             _io = new RouxIoStream();
             _errorReporter = new RouxErrorReporter(_io);
-            _interpreter = new Interpreter(_io, _errorReporter);
+            _interpreter = new Interpreter(this, _io, _errorReporter);
+
+            foreach (var binder in _defaultBinders)
+            {
+                binder.Bind(this);
+            }
+            
+            foreach (var binder in binders)
+            {
+                binder.Bind(this);
+            }
         }
 
-        public RouxRuntime(IInputOutput io)
+        public RouxRuntime(IInputOutput io, params IRouxLibraryBinder[] binders)
         {
             _io = io;
             _errorReporter = new RouxErrorReporter(_io);
-            _interpreter = new Interpreter(_io, _errorReporter);
+            _interpreter = new Interpreter(this, _io, _errorReporter);
+            
+            foreach (var binder in _defaultBinders)
+            {
+                binder.Bind(this);
+            }
+            
+            foreach (var binder in binders)
+            {
+                binder.Bind(this);
+            }
         }
 
         public void Run(string source)
@@ -54,7 +80,8 @@ namespace Roux
             }
             
             // test
-            DefineValue("Array", new Array());
+            DefineValue("List", new Roux.StandardLibrary.ListClass());
+            DefineValue("Map", new Roux.StandardLibrary.MapClass());
 
             _interpreter.Interpret(statements);
 

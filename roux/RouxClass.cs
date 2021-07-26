@@ -6,13 +6,16 @@ namespace Roux
 {
     public class RouxClass : RouxInstance, IInternalCallable
     {
-        private readonly Dictionary<string, RouxFunction> _methods;
-        private readonly Dictionary<string, RouxFunction> _staticMethods;
+        private Dictionary<string, ICallable> _methods;
+        private Dictionary<string, ICallable> _staticMethods;
 
         public int Arity { get; }
         public string Name { get; }
 
-        internal RouxClass(string name, Dictionary<string, RouxFunction> methods, Dictionary<string, RouxFunction> staticMethods)
+        internal Dictionary<string, ICallable> methods => _methods;
+        internal Dictionary<string, ICallable> staticMethods => _staticMethods;
+
+        internal RouxClass(string name, Dictionary<string, ICallable> methods, Dictionary<string, ICallable> staticMethods)
             : base(null)
         {
             Class = this;
@@ -21,7 +24,7 @@ namespace Roux
             _staticMethods = staticMethods;
 
             // set arity based on constructor argument count
-            RouxFunction constructor = FindMethod("construct");
+            RouxFunction constructor = (RouxFunction)FindMethod("construct");
             Arity = constructor == null ? 0 : constructor.Arity;
         }
 
@@ -36,7 +39,7 @@ namespace Roux
             RouxInstance instance = new RouxInstance(this);
 
             // If the class has a constructor, we bind it and call it along with any given arguments
-            RouxFunction constructor = FindMethod("construct");
+            RouxFunction constructor = (RouxFunction)FindMethod("construct");
             if (constructor != null)
             {
                 ((IInternalCallable)constructor.Bind(instance)).Call(interpreter, arguments);
@@ -45,7 +48,7 @@ namespace Roux
             return instance;
         }
 
-        internal RouxFunction FindMethod(string name)
+        internal ICallable FindMethod(string name)
         {
             if (_methods.ContainsKey(name))
             {
@@ -54,7 +57,7 @@ namespace Roux
             return null;
         }
 
-        internal RouxFunction FindStaticMethod(string name)
+        internal ICallable FindStaticMethod(string name)
         {
             if (_staticMethods.ContainsKey(name))
             {

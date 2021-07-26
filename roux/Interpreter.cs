@@ -36,6 +36,7 @@ namespace Roux
 
         private readonly Dictionary<Expr, int> _locals = new Dictionary<Expr, int>();
 
+        private readonly RouxRuntime _runtime = null;
         private readonly IInputOutput _io;
         private readonly IErrorReporter _errorReporter;
 
@@ -43,14 +44,19 @@ namespace Roux
 
         private class BreakException : Exception { }
         private class ContinueException : Exception { }
-
+        
         public Interpreter(IInputOutput io, IErrorReporter errorReporter)
         {
             _io = io;
             _errorReporter = errorReporter;
+            _environment = _globals;
+        }
 
-            //_globals.Define("tick", new TickCallable());
-
+        public Interpreter(RouxRuntime runtime, IInputOutput io, IErrorReporter errorReporter)
+        {
+            _runtime = runtime;
+            _io = io;
+            _errorReporter = errorReporter;
             _environment = _globals;
         }
 
@@ -125,14 +131,14 @@ namespace Roux
         {
             _environment.Define(stmt.Name.Lexeme, null);
 
-            Dictionary<string, RouxFunction> methods = new Dictionary<string, RouxFunction>();
+            Dictionary<string, ICallable> methods = new Dictionary<string, ICallable>();
             foreach (var method in stmt.Methods)
             {
                 RouxFunction function = new RouxFunction(method, _environment, method.Name.Lexeme.Equals("construct"));
                 methods.Add(method.Name.Lexeme, function);
             }
 
-            Dictionary<string, RouxFunction> staticMethods = new Dictionary<string, RouxFunction>();
+            Dictionary<string, ICallable> staticMethods = new Dictionary<string, ICallable>();
             foreach (var method in stmt.StaticMethods)
             {
                 RouxFunction function = new RouxFunction(method, _environment, false);
@@ -338,7 +344,17 @@ namespace Roux
                 throw new InterpreterException(expr.Parenthesis, $"Expected {function.Arity} arguments but got {arguments.Count}.");
             }
 
-            return ((IInternalCallable)function).Call(this, arguments);
+            if (function is IInternalCallable internalFunction)
+            {
+                return internalFunction.Call(this, arguments);
+            }
+
+            if (_runtime != null)
+            {
+                return function.Call(_runtime, arguments);
+            }
+
+            throw new Exception("Failed to interpret call expression");
         }
 
         public object VisitGetExpr(Expr.Get expr)
