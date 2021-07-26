@@ -52,22 +52,25 @@ namespace Roux
             {
                 return;
             }
+            
+            // test
+            DefineValue("Array", new Array());
 
             _interpreter.Interpret(statements);
 
-            var instance = CreateInstance("Sandwich", "rye", "corned beef", "sauerkraut", "swiss cheese");
-            ((RouxFunction)instance.Get("describe")).Call(this, new List<object>());
-            ((RouxFunction)instance.Get("define")).Call(this, new List<object>());
-            
-            IO.Output(instance.ToString());
-            IO.Output($"cheese type: { instance.Get("cheese") }");
-
-            var foo = GetValue("foo");
-            IO.Output(foo.ToString());
-            
-            SetValue("foo", 123);
-            foo = GetValue("foo");
-            IO.Output(foo.ToString());
+            // var instance = CreateInstance("Sandwich", "rye", "corned beef", "sauerkraut", "swiss cheese");
+            // ((RouxFunction)instance.Get("describe")).Call(this, new List<object>());
+            // ((RouxFunction)instance.Get("define")).Call(this, new List<object>());
+            //
+            // IO.Output(instance.ToString());
+            // IO.Output($"cheese type: { instance.Get("cheese") }");
+            //
+            // var foo = GetValue("foo");
+            // IO.Output(foo.ToString());
+            //
+            // SetValue("foo", 123);
+            // foo = GetValue("foo");
+            // IO.Output(foo.ToString());
         }
 
         public void ResetErrorSystem()
@@ -129,6 +132,14 @@ namespace Roux
                 //containingEnvironment.Assign(endToken, val, true, false);
                 containingEnvironment.Assign(endToken, val);
             }
+        }
+
+        public void DefineValue(string address, object value)
+        {
+            var containingEnvironment = AddressToEnvironment(address, out var endToken);
+            var sanitizedValue = Interpreter.SanitizeObject(value);
+            
+            containingEnvironment.Define(address, value);
         }
         
         private Environment AddressToEnvironment(string address, out string lastTokenLexeme)

@@ -25,7 +25,7 @@ namespace Roux
             Arity = constructor == null ? 0 : constructor.Arity;
         }
 
-        public object Call(RouxRuntime runtime, List<object> arguments)
+        public virtual object Call(RouxRuntime runtime, List<object> arguments)
         {
             return ((IInternalCallable)this).Call(runtime.Interpreter, arguments);
         }

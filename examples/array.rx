@@ -1,0 +1,11 @@
+var arr = Array();
+
+print arr;
+
+arr.set(1, "a");
+arr.set(2, "b");
+arr.set(3, "c");
+
+print arr.get(3);
+print arr.get(2);
+print arr.get(1);
