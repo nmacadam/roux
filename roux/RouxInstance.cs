@@ -23,19 +23,25 @@ namespace Roux
                 return _fields[name];
             }
 
-            RouxFunction staticMethod = _class.FindStaticMethod(name);
+            ICallable staticMethod = _class.FindStaticMethod(name);
             if (staticMethod != null)
             {
                 // we don't want to bind a static method because it does not share the class's scope
                 return staticMethod;
             }
 
-            RouxFunction method = _class.FindMethod(name);
+            ICallable method = _class.FindMethod(name);
             if (method != null)
             {
-                // bind the method to this instance with a new environment for it's scope within the class
-                // we're doing this to give put the 'this' keyword in the method's scope 
-                return method.Bind(this);
+                if (method is RouxFunction rouxFunction)
+                {
+                    // bind the method to this instance with a new environment for it's scope within the class
+                    // we're doing this to give put the 'this' keyword in the method's scope 
+                    return rouxFunction.Bind(this);
+                }
+
+                // return foreign method
+                return method;
             }
 
             throw new RouxException($"Undefined property '{name}'.");

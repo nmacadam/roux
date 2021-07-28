@@ -17,4 +17,4 @@ class Sandwich {
   }
 }
 
-var foo = "hello world";
+Sandwich("rye", "corned beef", "sauerkraut", "swiss cheese").describe();

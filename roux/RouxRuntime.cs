@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using Roux.StandardLibrary;
 
 [assembly: InternalsVisibleTo("Tests")]
 [assembly: InternalsVisibleTo("Tools")]
@@ -16,18 +17,43 @@ namespace Roux
 
         internal Interpreter Interpreter => _interpreter;
 
-        public RouxRuntime()
+        private readonly IRouxLibraryBinder[] _defaultBinders = 
+        {
+            new RouxStandardLibrary()
+        };
+
+        public RouxRuntime(params IRouxLibraryBinder[] binders)
         {
             _io = new RouxIoStream();
             _errorReporter = new RouxErrorReporter(_io);
-            _interpreter = new Interpreter(_io, _errorReporter);
+            _interpreter = new Interpreter(this, _io, _errorReporter);
+
+            foreach (var binder in _defaultBinders)
+            {
+                binder.Bind(this);
+            }
+            
+            foreach (var binder in binders)
+            {
+                binder.Bind(this);
+            }
         }
 
-        public RouxRuntime(IInputOutput io)
+        public RouxRuntime(IInputOutput io, params IRouxLibraryBinder[] binders)
         {
             _io = io;
             _errorReporter = new RouxErrorReporter(_io);
-            _interpreter = new Interpreter(_io, _errorReporter);
+            _interpreter = new Interpreter(this, _io, _errorReporter);
+            
+            foreach (var binder in _defaultBinders)
+            {
+                binder.Bind(this);
+            }
+            
+            foreach (var binder in binders)
+            {
+                binder.Bind(this);
+            }
         }
 
         public void Run(string source)
@@ -52,22 +78,26 @@ namespace Roux
             {
                 return;
             }
+            
+            // test
+            DefineValue("List", new Roux.StandardLibrary.ListClass());
+            DefineValue("Map", new Roux.StandardLibrary.MapClass());
 
             _interpreter.Interpret(statements);
 
-            var instance = CreateInstance("Sandwich", "rye", "corned beef", "sauerkraut", "swiss cheese");
-            ((RouxFunction)instance.Get("describe")).Call(this, new List<object>());
-            ((RouxFunction)instance.Get("define")).Call(this, new List<object>());
-            
-            IO.Output(instance.ToString());
-            IO.Output($"cheese type: { instance.Get("cheese") }");
-
-            var foo = GetValue("foo");
-            IO.Output(foo.ToString());
-            
-            SetValue("foo", 123);
-            foo = GetValue("foo");
-            IO.Output(foo.ToString());
+            // var instance = CreateInstance("Sandwich", "rye", "corned beef", "sauerkraut", "swiss cheese");
+            // ((RouxFunction)instance.Get("describe")).Call(this, new List<object>());
+            // ((RouxFunction)instance.Get("define")).Call(this, new List<object>());
+            //
+            // IO.Output(instance.ToString());
+            // IO.Output($"cheese type: { instance.Get("cheese") }");
+            //
+            // var foo = GetValue("foo");
+            // IO.Output(foo.ToString());
+            //
+            // SetValue("foo", 123);
+            // foo = GetValue("foo");
+            // IO.Output(foo.ToString());
         }
 
         public void ResetErrorSystem()
@@ -129,6 +159,14 @@ namespace Roux
                 //containingEnvironment.Assign(endToken, val, true, false);
                 containingEnvironment.Assign(endToken, val);
             }
+        }
+
+        public void DefineValue(string address, object value)
+        {
+            var containingEnvironment = AddressToEnvironment(address, out var endToken);
+            var sanitizedValue = Interpreter.SanitizeObject(value);
+            
+            containingEnvironment.Define(address, value);
         }
         
         private Environment AddressToEnvironment(string address, out string lastTokenLexeme)

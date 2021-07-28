@@ -1,0 +1,11 @@
+var map = Map();
+
+print map;
+
+map.add("a", "foo");
+map.add("b", "bar");
+map.add("c", "baz");
+
+print map.at("a");
+print map.at("b");
+print map.at("c");

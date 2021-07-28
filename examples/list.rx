@@ -1,0 +1,11 @@
+var list = List();
+
+print list;
+
+list.add("a");
+list.add("b");
+list.add("c");
+
+print list.at(0);
+print list.at(1);
+print list.at(2);
